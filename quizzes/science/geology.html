@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>地質時代クイズ｜期間・開始・終了・境界（オフライン）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../common/quiz-common.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>地質時代クイズ｜期間・開始・終了・境界（オフライン）</h1>
+      <p>カンブリア紀〜白亜紀まで「いつ？」と「どれくらい？」をランダム出題で定着。</p>
+    </header>
+
+    <main>
+      <!-- Config Section -->
+      <section class="card" id="config">
+        <h2>設定</h2>
+        <div class="row">
+          <div>
+            <label for="mode">モード</label>
+            <select id="mode">
+              <option value="multiple">4択問題（ランダム選択肢）</option>
+              <option value="input">数字入力（精度重視）</option>
+            </select>
+            <p class="tiny">選択式でスピード／入力式で精度を鍛えます。</p>
+          </div>
+          <div>
+            <label for="count">出題数</label>
+            <input id="count" type="number" min="5" max="50" value="12" />
+            <p class="tiny">推奨：10〜20問。短時間で反復。</p>
+          </div>
+          <div>
+            <label for="scope">出題範囲</label>
+            <select id="scope">
+              <option value="all">全範囲（期間・開始・終了・境界）</option>
+              <option value="periods">各紀の「期間」だけ</option>
+              <option value="bounds">境界（K–Pg / P–T）だけ</option>
+              <option value="starts">各紀の「開始」だけ</option>
+              <option value="ends">各紀の「終了」だけ</option>
+            </select>
+            <p class="tiny">苦手箇所に絞って練習できます。</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="startBtn">クイズ開始</button>
+        </div>
+        <p class="tiny">
+          ヒント：
+          <span class="badge">中生代＝約1億9千万年</span>
+          <span class="badge">白亜紀＝約7,900万年</span>
+          <span class="badge">ジュラ紀＝約5,600万年</span>
+          <span class="badge">三畳紀＝約5,000万年</span>
+        </p>
+
+        <details>
+          <summary>収録データ（覚えやすい丸め値）</summary>
+          <ul>
+            <li><strong>カンブリア紀:</strong> 約5億4千万〜約4億9千万年前 → 期間 約5千万年</li>
+            <li><strong>オルドビス紀:</strong> 約4億9千万〜約4億4千万年前 → 約5千万年</li>
+            <li><strong>シルル紀:</strong> 約4億4千万〜約4億1千万年前 → 約3千万年</li>
+            <li><strong>デボン紀:</strong> 約4億1千万〜約3億6千万年前 → 約5千万年</li>
+            <li><strong>石炭紀:</strong> 約3億6千万〜約2億9千万年前 → 約7千万年</li>
+            <li><strong>ペルム紀:</strong> 約2億9千万〜約2億5,200万年前 → 約3,800万年</li>
+            <li><strong>三畳紀:</strong> 約2億5,200万〜約2億130万年前 → 約5千万年</li>
+            <li><strong>ジュラ紀:</strong> 約2億130万〜約1億4,500万年前 → 約5,600万年</li>
+            <li><strong>白亜紀:</strong> 約1億4,500万〜約6,600万年前 → 約7,900万年</li>
+            <li><strong>P–T境界:</strong> 約2億5,200万年前（古生代→中生代）</li>
+            <li><strong>K–Pg境界:</strong> 約6,600万年前（白亜紀→新生代）</li>
+          </ul>
+          <p class="tiny">更新される研究に合わせた厳密値とは僅かに差がある場合がありますが、記憶定着には十分な代表値です。</p>
+        </details>
+      </section>
+
+      <!-- Quiz Section -->
+      <div id="quizWrapper" class="hidden">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-text">
+            問題 <span id="currentQ">1</span> / <span id="totalQ">12</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+          <!-- Questions will be inserted here dynamically -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button id="exitBtn" class="danger">結果を見る</button>
+          <button id="nextBtn" class="primary">次へ</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsWrapper" class="hidden">
+        <div class="results-container">
+          <div class="card">
+            <div class="score-summary">
+              <div class="score-label">あなたのスコア</div>
+              <div class="score-number" id="scoreNumber">0 / 12</div>
+              <div class="score-label" id="scorePercent">正解率: 0%</div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restartBtn">最初からやり直す</button>
+              <button id="newQuizBtn" class="secondary">設定を変更して新規クイズ</button>
+              <button id="reviewWrongBtn" class="warn">間違いだけ復習</button>
+              <button id="reviewAllBtn" class="secondary">全問題をレビュー</button>
+            </div>
+          </div>
+
+          <!-- Wrong Answers Section -->
+          <div id="wrongSection" class="card result-section">
+            <h3>間違えた問題</h3>
+            <div id="wrongList"></div>
+          </div>
+
+          <!-- All Answers Section -->
+          <div id="allSection" class="card result-section hidden">
+            <h3>全問題の回答履歴</h3>
+            <div id="allList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>保存方法：このページを「.html」ファイルとして保存→ブラウザで開くだけ。</p>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>確認</h3>
+        <p id="modalMessage">本当に終了して結果を見ますか？</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="secondary">キャンセル</button>
+          <button id="modalConfirm" class="warn">結果を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../common/quiz-common.js"></script>
+    <script>
+      // 地質時代クイズデータ
+      const geologicalData = [
+        {
+          id: "cam",
+          name: "カンブリア紀",
+          start: 540,
+          end: 490,
+          dur: 50,
+          kind: "period",
+          explain: "カンブリア爆発期。約5千万年間。"
+        },
+        {
+          id: "ord",
+          name: "オルドビス紀",
+          start: 490,
+          end: 440,
+          dur: 50,
+          kind: "period",
+          explain: "海洋生物が繁栄。約5千万年間。"
+        },
+        {
+          id: "sil",
+          name: "シルル紀",
+          start: 440,
+          end: 410,
+          dur: 30,
+          kind: "period",
+          explain: "陸上植物の拡大。約3千万年間。"
+        },
+        {
+          id: "dev",
+          name: "デボン紀",
+          start: 410,
+          end: 360,
+          dur: 50,
+          kind: "period",
+          explain: "魚の時代。約5千万年間。"
+        },
+        {
+          id: "car",
+          name: "石炭紀",
+          start: 360,
+          end: 290,
+          dur: 70,
+          kind: "period",
+          explain: "巨大森林の時代。約7千万年間。"
+        },
+        {
+          id: "per",
+          name: "ペルム紀",
+          start: 290,
+          end: 252,
+          dur: 38,
+          kind: "period",
+          explain: "パンゲアと最大絶滅。約3,800万年間。"
+        },
+        {
+          id: "tri",
+          name: "三畳紀",
+          start: 252,
+          end: 201.3,
+          dur: 50,
+          kind: "period",
+          explain: "恐竜の始まり。約5千万年間。"
+        },
+        {
+          id: "jur",
+          name: "ジュラ紀",
+          start: 201.3,
+          end: 145,
+          dur: 56,
+          kind: "period",
+          explain: "恐竜繁栄。約5,600万年間。"
+        },
+        {
+          id: "cre",
+          name: "白亜紀",
+          start: 145,
+          end: 66,
+          dur: 79,
+          kind: "period",
+          explain: "被子植物と恐竜全盛。約7,900万年間。"
+        },
+        {
+          id: "pt",
+          name: "P–T境界（ペルム→三畳）",
+          when: 252,
+          kind: "boundary",
+          explain: "史上最大の大量絶滅。約2億5,200万年前。"
+        },
+        {
+          id: "kpg",
+          name: "K–Pg境界（白亜→新生代）",
+          when: 66,
+          kind: "boundary",
+          explain: "恐竜絶滅。約6,600万年前。"
+        }
+      ];
+
+      // 表示フォーマット（日本語）
+      const fmtDur = (m) => {
+        const mny = Math.round(m * 10) / 10;
+        const oku = Math.floor(mny / 100);
+        const man = Math.round((mny % 100) * 100);
+        if (oku > 0) return `約${oku}億${man ? man + '万' : ''}年`;
+        return `約${Math.round(mny * 100)}万年`;
+      };
+
+      const fmtMa = (ma) => {
+        const mny = Math.round(ma * 10) / 10;
+        const oku = Math.floor(mny / 100);
+        const man = Math.round((mny % 100) * 100);
+        if (oku > 0) return `約${oku}億${man ? man + '万' : ''}年前`;
+        return `約${Math.round(mny * 100)}万年前`;
+      };
+
+      // 地質時代クイズエンジン（QuizEngineを継承）
+      class GeologicalQuizEngine extends QuizEngine {
+        constructor() {
+          super(geologicalData, {
+            title: '地質時代クイズ',
+            description: 'カンブリア紀〜白亜紀まで'
+          });
+        }
+
+        makeQuestion(item, mode, focus) {
+          let prompt = "", correctValue = "", choices = [], type = "";
+
+          if (item.kind === "period") {
+            if (focus === "mixed") {
+              const pool = ["dur", "start", "end"];
+              type = this.shuffle(pool)[0];
+            } else {
+              type = focus;
+            }
+
+            if (type === "dur") {
+              prompt = `${item.name}は何年間続いた？`;
+              correctValue = fmtDur(item.dur);
+              choices = this.makeDurChoices(item.dur, correctValue);
+            } else if (type === "start") {
+              prompt = `${item.name}の開始はいつ頃？`;
+              correctValue = fmtMa(item.start);
+              choices = this.makeMaChoices(item.start, correctValue, "start");
+            } else {
+              prompt = `${item.name}の終了はいつ頃？`;
+              correctValue = fmtMa(item.end);
+              choices = this.makeMaChoices(item.end, correctValue, "end");
+            }
+          } else {
+            type = "boundary";
+            prompt = `${item.name}はいつ頃？`;
+            correctValue = fmtMa(item.when);
+            choices = this.makeBoundaryChoices(item.when, correctValue);
+          }
+
+          const typeLabel = type === "dur" ? '期間' :
+                           type === "start" ? '開始' :
+                           type === "end" ? '終了' : '境界';
+
+          const placeholder = type === "dur" ?
+            "例: 約5000万年 または 約1億9000万年" :
+            "例: 約2億5200万年前";
+
+          return {
+            id: item.id + "-" + Math.random().toString(36).slice(2),
+            item,
+            prompt,
+            correct: correctValue,
+            choices,
+            type,
+            mode,
+            badges: [
+              item.kind === "period" ? item.name : "境界",
+              typeLabel
+            ],
+            hint: item.explain,
+            placeholder
+          };
+        }
+
+        makeDurChoices(dur, correct) {
+          const pool = [50, 56, 79, 38, 70, 30];
+          const variants = this.shuffle([
+            fmtDur(dur + 5),
+            fmtDur(dur - 5),
+            fmtDur(dur + 10),
+            fmtDur(pool[Math.floor(Math.random() * pool.length)]),
+            fmtDur(pool[Math.floor(Math.random() * pool.length)])
+          ]);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i)
+            .slice(0, 4);
+          if (!all.includes(correct)) all[0] = correct;
+          return this.shuffle(all);
+        }
+
+        makeMaChoices(val, correct, which) {
+          const near = [val + 10, val - 15, val + 20];
+          const anchors = [66, 145, 201.3, 252, 290, 410, 540];
+          const pool = this.shuffle([...near, ...anchors]).slice(0, 3).map(fmtMa);
+          const all = this.shuffle([correct, ...pool])
+            .filter((v, i, self) => self.indexOf(v) === i)
+            .slice(0, 4);
+          if (!all.includes(correct)) all[0] = correct;
+          return this.shuffle(all);
+        }
+
+        makeBoundaryChoices(val, correct) {
+          const distract = this.shuffle([val + 20, val - 10, val === 66 ? 252 : 145]).map(fmtMa);
+          const all = this.shuffle([correct, ...distract])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        compareAnswer(userAnswer, correctAnswer) {
+          if (userAnswer === correctAnswer) return true;
+
+          // 入力ゆらぎ対応
+          const normalized = this.normalize(userAnswer);
+          const nA = this.extractMillion(normalized);
+          const nB = this.extractMillion(correctAnswer);
+
+          if (nA != null && nB != null) {
+            return Math.abs(nA - nB) < 1.0; // ±1百万年許容
+          }
+          return false;
+        }
+
+        normalize(s) {
+          const z2h = s.replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+          return z2h.replace(/\s+/g, '')
+            .replace(/百万年/g, '百万年前')
+            .replace(/万年/g, '万年')
+            .replace(/^約?/, '約');
+        }
+
+        extractMillion(s) {
+          const m1 = s.match(/約(\d+)億(?:(\d+)万)?年/);
+          const m2 = s.match(/約(\d+)万年/);
+          const m3 = s.match(/約(\d+)億(?:(\d+)万)?年前/);
+          const m4 = s.match(/約(\d+)万年前/);
+
+          if (m1) {
+            const oku = parseInt(m1[1], 10);
+            const man = parseInt(m1[2] || "0", 10);
+            return oku * 100 + man / 100;
+          }
+          if (m2) {
+            return parseInt(m2[1], 10) / 100;
+          }
+          if (m3) {
+            const oku = parseInt(m3[1], 10);
+            const man = parseInt(m3[2] || "0", 10);
+            return oku * 100 + man / 100;
+          }
+          if (m4) {
+            return parseInt(m4[1], 10) / 100;
+          }
+          return null;
+        }
+      }
+
+      // クイズエンジン初期化
+      const quizEngine = new GeologicalQuizEngine();
+    </script>
+  </body>
+</html>

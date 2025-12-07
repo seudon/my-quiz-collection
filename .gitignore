@@ -1,0 +1,57 @@
+# AI関連ファイル（公開したくない）
+CLAUDE.md
+.claude/
+.cursor/
+.aider/
+.continue/
+.copilot/
+
+# AI エディタ設定
+.vscode/settings.json
+.idea/
+
+# OS関連
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# エディタ一時ファイル
+*.swp
+*.swo
+*~
+.*.swp
+
+# ログファイル
+*.log
+
+# 将来的な学習履歴データ（LocalStorageのエクスポートなど）
+user-data/
+learning-history/
+*.userdata
+
+# Node.js（使わない予定だが念のため）
+node_modules/
+package-lock.json
+yarn.lock
+
+# ビルド出力（使わない予定だが念のため）
+dist/
+build/
+
+# テスト関連
+coverage/
+.nyc_output/
+
+# 環境変数（使わない予定だが念のため）
+.env
+.env.local
+
+# バックアップファイル
+*.bak
+*.backup
+*-backup/
+
+# 一時ファイル
+tmp/
+temp/
+*.tmp
