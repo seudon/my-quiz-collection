@@ -167,3 +167,4 @@ class MyQuizEngine extends QuizEngine {
 ## 謝辞
 
 クイズデータは一般的な教育資料を参考に作成しています。
+
