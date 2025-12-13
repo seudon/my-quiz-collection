@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>2の累乗クイズ｜コンピュータで必須の暗記知識（オフライン）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../common/quiz-common.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>2の累乗クイズ｜コンピュータで必須の暗記知識（オフライン）</h1>
+      <p>2^10=1024（1KB）など、プログラミングやIT分野で頻出する2の累乗を即答できるように。</p>
+    </header>
+
+    <main>
+      <!-- Config Section -->
+      <section class="card" id="config">
+        <h2>設定</h2>
+        <div class="row">
+          <div>
+            <label for="mode">モード</label>
+            <select id="mode">
+              <option value="multiple">4択問題（ランダム選択肢）</option>
+              <option value="input">直接入力（精度重視）</option>
+            </select>
+            <p class="tiny">選択式でスピード／入力式で精度を鍛えます。</p>
+          </div>
+          <div>
+            <label for="count">出題数</label>
+            <input id="count" type="number" min="5" max="50" value="15" />
+            <p class="tiny">推奨：10〜20問。短時間で反復。</p>
+          </div>
+          <div>
+            <label for="scope">出題範囲</label>
+            <select id="scope">
+              <option value="all">全形式（累乗⇄値⇄用途）</option>
+              <option value="to_value">累乗式→値</option>
+              <option value="from_value">値→累乗式</option>
+              <option value="basic">基本（2^0〜2^10）</option>
+              <option value="computer">コンピュータ（2^8, 2^16, 2^32）</option>
+              <option value="storage">ストレージ（2^10, 2^20, 2^30）</option>
+            </select>
+            <p class="tiny">目的別に絞って練習できます。</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="startBtn">クイズ開始</button>
+        </div>
+        <p class="tiny">
+          ヒント：
+          <span class="badge">2^10=1024≒1千（1KB）</span>
+          <span class="badge">2^20≒100万（1MB）</span>
+          <span class="badge">2^30≒10億（1GB）</span>
+          <span class="badge">2^8=256（1バイト色深度）</span>
+        </p>
+
+        <details>
+          <summary>収録データ（2^0〜2^32まで23個）</summary>
+          <ul>
+            <li><strong>2^0:</strong> 1 【数学の基本、任意の数の0乗】</li>
+            <li><strong>2^1:</strong> 2 【2進数の基本単位】</li>
+            <li><strong>2^2:</strong> 4 【2ビット、4方向】</li>
+            <li><strong>2^3:</strong> 8 【1バイト = 8ビット】</li>
+            <li><strong>2^4:</strong> 16 【16進数、4ビット】</li>
+            <li><strong>2^5:</strong> 32 【32ビットCPU、IPv4クラス】</li>
+            <li><strong>2^6:</strong> 64 【64ビットCPU、チェス盤】</li>
+            <li><strong>2^7:</strong> 128 【ASCII文字数、符号付き8ビット】</li>
+            <li><strong>2^8:</strong> 256 【8ビット整数、RGB各色の段階数】</li>
+            <li><strong>2^9:</strong> 512 【セクタサイズ】</li>
+            <li><strong>2^10:</strong> 1024 【1キロバイト（KB）、覚えやすい基準】</li>
+            <li><strong>2^11:</strong> 2048 【2KB、パズルゲーム】</li>
+            <li><strong>2^12:</strong> 4096 【4KB、ページサイズ】</li>
+            <li><strong>2^13:</strong> 8192 【8KB】</li>
+            <li><strong>2^14:</strong> 16384 【16KB】</li>
+            <li><strong>2^15:</strong> 32768 【32KB、符号付き16ビット整数の最大値+1】</li>
+            <li><strong>2^16:</strong> 65536 【64KB、16ビット整数、ポート番号の上限】</li>
+            <li><strong>2^20:</strong> 1048576 【1メガバイト（MB）】</li>
+            <li><strong>2^24:</strong> 16777216 【24ビット色（1677万色）】</li>
+            <li><strong>2^30:</strong> 1073741824 【1ギガバイト（GB）】</li>
+            <li><strong>2^31:</strong> 2147483648 【符号付き32ビット整数の最大値+1】</li>
+            <li><strong>2^32:</strong> 4294967296 【32ビット整数、IPv4アドレス数】</li>
+            <li><strong>2^40:</strong> 1099511627776 【1テラバイト（TB）】</li>
+          </ul>
+          <p class="tiny">プログラミング、コンピュータサイエンス、情報処理試験で頻出の値です。</p>
+        </details>
+      </section>
+
+      <!-- Quiz Section -->
+      <div id="quizWrapper" class="hidden">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-text">
+            問題 <span id="currentQ">1</span> / <span id="totalQ">15</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+          <!-- Questions will be inserted here dynamically -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button id="exitBtn" class="danger">結果を見る</button>
+          <button id="nextBtn" class="primary">次へ</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsWrapper" class="hidden">
+        <div class="results-container">
+          <div class="card">
+            <div class="score-summary">
+              <div class="score-label">あなたのスコア</div>
+              <div class="score-number" id="scoreNumber">0 / 15</div>
+              <div class="score-label" id="scorePercent">正解率: 0%</div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restartBtn">最初からやり直す</button>
+              <button id="newQuizBtn" class="secondary">設定を変更して新規クイズ</button>
+              <button id="reviewWrongBtn" class="warn">間違いだけ復習</button>
+              <button id="reviewAllBtn" class="secondary">全問題をレビュー</button>
+            </div>
+          </div>
+
+          <!-- Wrong Answers Section -->
+          <div id="wrongSection" class="card result-section">
+            <h3>間違えた問題</h3>
+            <div id="wrongList"></div>
+          </div>
+
+          <!-- All Answers Section -->
+          <div id="allSection" class="card result-section hidden">
+            <h3>全問題の回答履歴</h3>
+            <div id="allList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>保存方法：このページを「.html」ファイルとして保存→ブラウザで開くだけ。</p>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>確認</h3>
+        <p id="modalMessage">本当に終了して結果を見ますか？</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="secondary">キャンセル</button>
+          <button id="modalConfirm" class="warn">結果を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../common/quiz-common.js"></script>
+    <script>
+      // 2の累乗データ
+      const powersOfTwoData = [
+        {
+          id: "pow_0",
+          exponent: 0,
+          expression: "2^0",
+          value: 1,
+          valueStr: "1",
+          usage: "任意の数の0乗",
+          hint: "どんな数も0乗すると1",
+          category: "basic"
+        },
+        {
+          id: "pow_1",
+          exponent: 1,
+          expression: "2^1",
+          value: 2,
+          valueStr: "2",
+          usage: "2進数の基本単位",
+          hint: "2の1乗は2そのまま",
+          category: "basic"
+        },
+        {
+          id: "pow_2",
+          exponent: 2,
+          expression: "2^2",
+          value: 4,
+          valueStr: "4",
+          usage: "2ビット、4方向（上下左右）",
+          hint: "2×2=4",
+          category: "basic"
+        },
+        {
+          id: "pow_3",
+          exponent: 3,
+          expression: "2^3",
+          value: 8,
+          valueStr: "8",
+          usage: "1バイト = 8ビット",
+          hint: "2×2×2=8、3ビット",
+          category: "basic"
+        },
+        {
+          id: "pow_4",
+          exponent: 4,
+          expression: "2^4",
+          value: 16,
+          valueStr: "16",
+          usage: "16進数、4ビット",
+          hint: "2^3の2倍 = 16",
+          category: "basic"
+        },
+        {
+          id: "pow_5",
+          exponent: 5,
+          expression: "2^5",
+          value: 32,
+          valueStr: "32",
+          usage: "32ビットCPU、IPv4クラス",
+          hint: "2^4の2倍 = 32",
+          category: "basic"
+        },
+        {
+          id: "pow_6",
+          exponent: 6,
+          expression: "2^6",
+          value: 64,
+          valueStr: "64",
+          usage: "64ビットCPU、チェス盤（8×8）",
+          hint: "2^5の2倍 = 64",
+          category: "basic"
+        },
+        {
+          id: "pow_7",
+          exponent: 7,
+          expression: "2^7",
+          value: 128,
+          valueStr: "128",
+          usage: "ASCII文字数、符号付き8ビット整数",
+          hint: "2^6の2倍 = 128",
+          category: "basic"
+        },
+        {
+          id: "pow_8",
+          exponent: 8,
+          expression: "2^8",
+          value: 256,
+          valueStr: "256",
+          usage: "8ビット整数、RGB各色の段階数（0-255）",
+          hint: "2^7の2倍 = 256、よく使う",
+          category: "computer"
+        },
+        {
+          id: "pow_9",
+          exponent: 9,
+          expression: "2^9",
+          value: 512,
+          valueStr: "512",
+          usage: "ディスクセクタサイズ",
+          hint: "2^8の2倍 = 512",
+          category: "basic"
+        },
+        {
+          id: "pow_10",
+          exponent: 10,
+          expression: "2^10",
+          value: 1024,
+          valueStr: "1024",
+          usage: "1キロバイト（KB）≒ 1000",
+          hint: "超重要！1KB、約1000",
+          category: "storage"
+        },
+        {
+          id: "pow_11",
+          exponent: 11,
+          expression: "2^11",
+          value: 2048,
+          valueStr: "2048",
+          usage: "2KB、パズルゲーム「2048」",
+          hint: "2^10の2倍 = 2048",
+          category: "basic"
+        },
+        {
+          id: "pow_12",
+          exponent: 12,
+          expression: "2^12",
+          value: 4096,
+          valueStr: "4096",
+          usage: "4KB、メモリページサイズ",
+          hint: "2^10×4 = 4096",
+          category: "storage"
+        },
+        {
+          id: "pow_13",
+          exponent: 13,
+          expression: "2^13",
+          value: 8192,
+          valueStr: "8192",
+          usage: "8KB",
+          hint: "2^10×8 = 8192",
+          category: "storage"
+        },
+        {
+          id: "pow_14",
+          exponent: 14,
+          expression: "2^14",
+          value: 16384,
+          valueStr: "16384",
+          usage: "16KB",
+          hint: "2^10×16 = 16384",
+          category: "storage"
+        },
+        {
+          id: "pow_15",
+          exponent: 15,
+          expression: "2^15",
+          value: 32768,
+          valueStr: "32768",
+          usage: "32KB、符号付き16ビット整数の最大値+1",
+          hint: "2^10×32 = 32768",
+          category: "computer"
+        },
+        {
+          id: "pow_16",
+          exponent: 16,
+          expression: "2^16",
+          value: 65536,
+          valueStr: "65536",
+          usage: "64KB、16ビット整数、ポート番号の上限",
+          hint: "重要！約6万5千",
+          category: "computer"
+        },
+        {
+          id: "pow_20",
+          exponent: 20,
+          expression: "2^20",
+          value: 1048576,
+          valueStr: "1048576",
+          usage: "1メガバイト（MB）≒ 100万",
+          hint: "超重要！1MB、約100万",
+          category: "storage"
+        },
+        {
+          id: "pow_24",
+          exponent: 24,
+          expression: "2^24",
+          value: 16777216,
+          valueStr: "16777216",
+          usage: "24ビット色（約1677万色）",
+          hint: "フルカラー、約1677万",
+          category: "computer"
+        },
+        {
+          id: "pow_30",
+          exponent: 30,
+          expression: "2^30",
+          value: 1073741824,
+          valueStr: "1073741824",
+          usage: "1ギガバイト（GB）≒ 10億",
+          hint: "超重要！1GB、約10億",
+          category: "storage"
+        },
+        {
+          id: "pow_31",
+          exponent: 31,
+          expression: "2^31",
+          value: 2147483648,
+          valueStr: "2147483648",
+          usage: "符号付き32ビット整数の最大値+1",
+          hint: "約21億、intの限界",
+          category: "computer"
+        },
+        {
+          id: "pow_32",
+          exponent: 32,
+          expression: "2^32",
+          value: 4294967296,
+          valueStr: "4294967296",
+          usage: "32ビット整数、IPv4アドレス総数",
+          hint: "重要！約43億",
+          category: "computer"
+        },
+        {
+          id: "pow_40",
+          exponent: 40,
+          expression: "2^40",
+          value: 1099511627776,
+          valueStr: "1099511627776",
+          usage: "1テラバイト（TB）≒ 1兆",
+          hint: "1TB、約1兆",
+          category: "storage"
+        }
+      ];
+
+      // 2の累乗クイズエンジン（QuizEngineを継承）
+      class PowersOfTwoQuizEngine extends QuizEngine {
+        constructor() {
+          super(powersOfTwoData, {
+            title: '2の累乗クイズ',
+            description: 'コンピュータで必須の暗記知識'
+          });
+        }
+
+        buildQuestions() {
+          const scope = this.scopeSelect.value;
+          let pool = this.quizData;
+
+          // スコープでフィルタリング
+          if (scope === "basic") {
+            pool = this.quizData.filter(x => x.exponent <= 10);
+          } else if (scope === "computer") {
+            pool = this.quizData.filter(x => x.category === "computer");
+          } else if (scope === "storage") {
+            pool = this.quizData.filter(x => x.category === "storage");
+          }
+
+          const count = Math.min(Math.max(parseInt(this.countInput.value || 15, 10), 5), 50);
+          const mode = this.modeSelect.value;
+
+          this.questions = [];
+          const focus = scope === "to_value" ? "to_value" :
+                        scope === "from_value" ? "from_value" : "mixed";
+
+          pool = this.shuffle(pool);
+          for (let i = 0; i < count; i++) {
+            const q = this.makeQuestion(pool[i % pool.length], mode, focus);
+            this.questions.push(q);
+          }
+        }
+
+        makeQuestion(item, mode, focus) {
+          let prompt = "", correctValue = "", choices = [], type = "";
+
+          // 出題形式を決定
+          if (focus === "mixed") {
+            const pool = ["to_value", "from_value"];
+            type = this.shuffle(pool)[0];
+          } else {
+            type = focus;
+          }
+
+          // 問題生成
+          if (type === "to_value") {
+            prompt = `${item.expression} の値は？`;
+            correctValue = item.valueStr;
+            choices = this.makeValueChoices(item.value, correctValue);
+          } else {
+            // from_value
+            prompt = `${item.valueStr} は 2 の何乗？`;
+            correctValue = item.expression;
+            choices = this.makeExpressionChoices(item.exponent, correctValue);
+          }
+
+          const typeLabel = type === "to_value" ? '累乗→値' : '値→累乗';
+
+          const placeholder = type === "to_value" ? "例: 1024" : "例: 2^10";
+
+          return {
+            id: item.id + "-" + Math.random().toString(36).slice(2),
+            item,
+            prompt,
+            correct: correctValue,
+            choices,
+            type,
+            mode,
+            badges: [item.expression, typeLabel],
+            hint: `用途: ${item.usage} | ${item.hint}`,
+            placeholder
+          };
+        }
+
+        makeValueChoices(value, correct) {
+          // 他の2の累乗の値から選択肢を生成
+          const pool = powersOfTwoData
+            .filter(p => p.valueStr !== correct)
+            .map(p => p.valueStr);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants]);
+          return all.slice(0, 4);
+        }
+
+        makeExpressionChoices(exponent, correct) {
+          // 近い指数の累乗式から選択肢を生成
+          const nearby = [exponent - 1, exponent + 1, exponent - 2, exponent + 2]
+            .filter(e => e >= 0 && e <= 40)
+            .map(e => `2^${e}`);
+          const variants = this.shuffle(nearby).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        compareAnswer(userAnswer, correctAnswer) {
+          if (userAnswer === correctAnswer) return true;
+
+          // 正規化して比較
+          const normalized = this.normalize(userAnswer);
+          const normalizedCorrect = this.normalize(correctAnswer);
+
+          if (normalized === normalizedCorrect) return true;
+
+          // 数値として比較
+          const numUser = this.parseNumber(normalized);
+          const numCorrect = this.parseNumber(normalizedCorrect);
+          if (numUser !== null && numCorrect !== null) {
+            return numUser === numCorrect;
+          }
+
+          return false;
+        }
+
+        normalize(s) {
+          // 全角→半角変換
+          const z2h = s.replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+          return z2h.replace(/\s+/g, '')
+            .replace(/[＾]/g, '^')
+            .toLowerCase();
+        }
+
+        parseNumber(s) {
+          // カンマ区切りの数値をパース
+          const cleaned = s.replace(/,/g, '');
+          const num = parseInt(cleaned, 10);
+          return isNaN(num) ? null : num;
+        }
+      }
+
+      // クイズエンジン初期化
+      const quizEngine = new PowersOfTwoQuizEngine();
+    </script>
+  </body>
+</html>
