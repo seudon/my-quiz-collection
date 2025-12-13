@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>分数⇄小数⇄百分率クイズ｜日常計算力（オフライン）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../common/quiz-common.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>分数⇄小数⇄百分率クイズ｜日常計算力（オフライン）</h1>
+      <p>1/2＝0.5＝50%のように、日常でよく使う分数を小数・百分率で即答できるように。</p>
+    </header>
+
+    <main>
+      <!-- Config Section -->
+      <section class="card" id="config">
+        <h2>設定</h2>
+        <div class="row">
+          <div>
+            <label for="mode">モード</label>
+            <select id="mode">
+              <option value="multiple">4択問題（ランダム選択肢）</option>
+              <option value="input">直接入力（精度重視）</option>
+            </select>
+            <p class="tiny">選択式でスピード／入力式で精度を鍛えます。</p>
+          </div>
+          <div>
+            <label for="count">出題数</label>
+            <input id="count" type="number" min="5" max="50" value="15" />
+            <p class="tiny">推奨：10〜20問。短時間で反復。</p>
+          </div>
+          <div>
+            <label for="scope">出題範囲</label>
+            <select id="scope">
+              <option value="all">全形式（分数⇄小数⇄百分率）</option>
+              <option value="to_decimal">分数→小数</option>
+              <option value="to_percent">分数→百分率</option>
+              <option value="from_decimal">小数→分数</option>
+              <option value="from_percent">百分率→分数</option>
+            </select>
+            <p class="tiny">苦手な変換だけを集中練習できます。</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="startBtn">クイズ開始</button>
+        </div>
+        <p class="tiny">
+          ヒント：
+          <span class="badge">1/2＝0.5＝50%</span>
+          <span class="badge">1/4＝0.25＝25%</span>
+          <span class="badge">1/3≒0.333≒33%</span>
+          <span class="badge">3/4＝0.75＝75%</span>
+        </p>
+
+        <details>
+          <summary>収録データ（日常でよく使う30分数）</summary>
+          <ul>
+            <li><strong>1/2:</strong> 0.5 = 50% 【半額、半分】</li>
+            <li><strong>1/3:</strong> 0.333... ≒ 33% 【3等分】</li>
+            <li><strong>2/3:</strong> 0.666... ≒ 67% 【3分の2】</li>
+            <li><strong>1/4:</strong> 0.25 = 25% 【4分の1、25%オフ】</li>
+            <li><strong>3/4:</strong> 0.75 = 75% 【4分の3】</li>
+            <li><strong>1/5:</strong> 0.2 = 20% 【5等分、消費税】</li>
+            <li><strong>2/5:</strong> 0.4 = 40%</li>
+            <li><strong>3/5:</strong> 0.6 = 60%</li>
+            <li><strong>4/5:</strong> 0.8 = 80%</li>
+            <li><strong>1/6:</strong> 0.166... ≒ 17% 【10分＝1/6時間】</li>
+            <li><strong>5/6:</strong> 0.833... ≒ 83%</li>
+            <li><strong>1/8:</strong> 0.125 = 12.5% 【8等分】</li>
+            <li><strong>3/8:</strong> 0.375 = 37.5%</li>
+            <li><strong>5/8:</strong> 0.625 = 62.5%</li>
+            <li><strong>7/8:</strong> 0.875 = 87.5%</li>
+            <li><strong>1/10:</strong> 0.1 = 10% 【1割】</li>
+            <li><strong>3/10:</strong> 0.3 = 30% 【3割】</li>
+            <li><strong>7/10:</strong> 0.7 = 70% 【7割】</li>
+            <li><strong>9/10:</strong> 0.9 = 90% 【9割】</li>
+            <li><strong>1/12:</strong> 0.0833... ≒ 8.3% 【5分＝1/12時間】</li>
+            <li><strong>5/12:</strong> 0.4166... ≒ 41.7%</li>
+            <li><strong>7/12:</strong> 0.5833... ≒ 58.3%</li>
+            <li><strong>11/12:</strong> 0.9166... ≒ 91.7%</li>
+            <li><strong>1/16:</strong> 0.0625 = 6.25%</li>
+            <li><strong>3/16:</strong> 0.1875 = 18.75%</li>
+            <li><strong>5/16:</strong> 0.3125 = 31.25%</li>
+            <li><strong>1/20:</strong> 0.05 = 5% 【20等分】</li>
+            <li><strong>3/20:</strong> 0.15 = 15%</li>
+            <li><strong>1/25:</strong> 0.04 = 4%</li>
+            <li><strong>1/50:</strong> 0.02 = 2%</li>
+            <li><strong>1/100:</strong> 0.01 = 1% 【パーセント基本単位】</li>
+          </ul>
+          <p class="tiny">日常生活で頻出する分数を厳選。割引計算、時間換算、割合の見積もりに役立ちます。</p>
+        </details>
+      </section>
+
+      <!-- Quiz Section -->
+      <div id="quizWrapper" class="hidden">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-text">
+            問題 <span id="currentQ">1</span> / <span id="totalQ">15</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+          <!-- Questions will be inserted here dynamically -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button id="exitBtn" class="danger">結果を見る</button>
+          <button id="nextBtn" class="primary">次へ</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsWrapper" class="hidden">
+        <div class="results-container">
+          <div class="card">
+            <div class="score-summary">
+              <div class="score-label">あなたのスコア</div>
+              <div class="score-number" id="scoreNumber">0 / 15</div>
+              <div class="score-label" id="scorePercent">正解率: 0%</div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restartBtn">最初からやり直す</button>
+              <button id="newQuizBtn" class="secondary">設定を変更して新規クイズ</button>
+              <button id="reviewWrongBtn" class="warn">間違いだけ復習</button>
+              <button id="reviewAllBtn" class="secondary">全問題をレビュー</button>
+            </div>
+          </div>
+
+          <!-- Wrong Answers Section -->
+          <div id="wrongSection" class="card result-section">
+            <h3>間違えた問題</h3>
+            <div id="wrongList"></div>
+          </div>
+
+          <!-- All Answers Section -->
+          <div id="allSection" class="card result-section hidden">
+            <h3>全問題の回答履歴</h3>
+            <div id="allList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>保存方法：このページを「.html」ファイルとして保存→ブラウザで開くだけ。</p>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>確認</h3>
+        <p id="modalMessage">本当に終了して結果を見ますか？</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="secondary">キャンセル</button>
+          <button id="modalConfirm" class="warn">結果を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../common/quiz-common.js"></script>
+    <script>
+      // 分数データ
+      const fractionsData = [
+        {
+          id: "frac_1_2",
+          fraction: "1/2",
+          numerator: 1,
+          denominator: 2,
+          decimal: 0.5,
+          decimalStr: "0.5",
+          percent: 50,
+          percentStr: "50%",
+          usage: "半額セール、半分の量",
+          hint: "すべての基本となる「半分」"
+        },
+        {
+          id: "frac_1_3",
+          fraction: "1/3",
+          numerator: 1,
+          denominator: 3,
+          decimal: 0.333,
+          decimalStr: "0.333...",
+          percent: 33.3,
+          percentStr: "約33%",
+          usage: "3等分、33%オフ",
+          hint: "3で割り切れない無限小数"
+        },
+        {
+          id: "frac_2_3",
+          fraction: "2/3",
+          numerator: 2,
+          denominator: 3,
+          decimal: 0.667,
+          decimalStr: "0.666...",
+          percent: 66.7,
+          percentStr: "約67%",
+          usage: "3分の2、合格ライン",
+          hint: "1/3の2倍"
+        },
+        {
+          id: "frac_1_4",
+          fraction: "1/4",
+          numerator: 1,
+          denominator: 4,
+          decimal: 0.25,
+          decimalStr: "0.25",
+          percent: 25,
+          percentStr: "25%",
+          usage: "4分の1、25%オフ、15分=1/4時間",
+          hint: "1/2の半分"
+        },
+        {
+          id: "frac_3_4",
+          fraction: "3/4",
+          numerator: 3,
+          denominator: 4,
+          decimal: 0.75,
+          decimalStr: "0.75",
+          percent: 75,
+          percentStr: "75%",
+          usage: "4分の3、45分=3/4時間",
+          hint: "1/4の3倍"
+        },
+        {
+          id: "frac_1_5",
+          fraction: "1/5",
+          numerator: 1,
+          denominator: 5,
+          decimal: 0.2,
+          decimalStr: "0.2",
+          percent: 20,
+          percentStr: "20%",
+          usage: "5等分、消費税10%の2倍",
+          hint: "5で割る、0.2ずつ増える"
+        },
+        {
+          id: "frac_2_5",
+          fraction: "2/5",
+          numerator: 2,
+          denominator: 5,
+          decimal: 0.4,
+          decimalStr: "0.4",
+          percent: 40,
+          percentStr: "40%",
+          usage: "5分の2",
+          hint: "1/5の2倍"
+        },
+        {
+          id: "frac_3_5",
+          fraction: "3/5",
+          numerator: 3,
+          denominator: 5,
+          decimal: 0.6,
+          decimalStr: "0.6",
+          percent: 60,
+          percentStr: "60%",
+          usage: "5分の3、合格率60%",
+          hint: "1/5の3倍"
+        },
+        {
+          id: "frac_4_5",
+          fraction: "4/5",
+          numerator: 4,
+          denominator: 5,
+          decimal: 0.8,
+          decimalStr: "0.8",
+          percent: 80,
+          percentStr: "80%",
+          usage: "5分の4、高い達成率",
+          hint: "1/5の4倍"
+        },
+        {
+          id: "frac_1_6",
+          fraction: "1/6",
+          numerator: 1,
+          denominator: 6,
+          decimal: 0.167,
+          decimalStr: "0.166...",
+          percent: 16.7,
+          percentStr: "約17%",
+          usage: "10分=1/6時間",
+          hint: "1/3の半分"
+        },
+        {
+          id: "frac_5_6",
+          fraction: "5/6",
+          numerator: 5,
+          denominator: 6,
+          decimal: 0.833,
+          decimalStr: "0.833...",
+          percent: 83.3,
+          percentStr: "約83%",
+          usage: "50分=5/6時間",
+          hint: "1 - 1/6"
+        },
+        {
+          id: "frac_1_8",
+          fraction: "1/8",
+          numerator: 1,
+          denominator: 8,
+          decimal: 0.125,
+          decimalStr: "0.125",
+          percent: 12.5,
+          percentStr: "12.5%",
+          usage: "8等分、1/2の1/4",
+          hint: "1/4の半分"
+        },
+        {
+          id: "frac_3_8",
+          fraction: "3/8",
+          numerator: 3,
+          denominator: 8,
+          decimal: 0.375,
+          decimalStr: "0.375",
+          percent: 37.5,
+          percentStr: "37.5%",
+          usage: "8分の3",
+          hint: "1/8の3倍"
+        },
+        {
+          id: "frac_5_8",
+          fraction: "5/8",
+          numerator: 5,
+          denominator: 8,
+          decimal: 0.625,
+          decimalStr: "0.625",
+          percent: 62.5,
+          percentStr: "62.5%",
+          usage: "8分の5",
+          hint: "1/8の5倍"
+        },
+        {
+          id: "frac_7_8",
+          fraction: "7/8",
+          numerator: 7,
+          denominator: 8,
+          decimal: 0.875,
+          decimalStr: "0.875",
+          percent: 87.5,
+          percentStr: "87.5%",
+          usage: "8分の7",
+          hint: "1 - 1/8"
+        },
+        {
+          id: "frac_1_10",
+          fraction: "1/10",
+          numerator: 1,
+          denominator: 10,
+          decimal: 0.1,
+          decimalStr: "0.1",
+          percent: 10,
+          percentStr: "10%",
+          usage: "1割、消費税10%",
+          hint: "10で割る"
+        },
+        {
+          id: "frac_3_10",
+          fraction: "3/10",
+          numerator: 3,
+          denominator: 10,
+          decimal: 0.3,
+          decimalStr: "0.3",
+          percent: 30,
+          percentStr: "30%",
+          usage: "3割、30%オフ",
+          hint: "1/10の3倍"
+        },
+        {
+          id: "frac_7_10",
+          fraction: "7/10",
+          numerator: 7,
+          denominator: 10,
+          decimal: 0.7,
+          decimalStr: "0.7",
+          percent: 70,
+          percentStr: "70%",
+          usage: "7割、合格率",
+          hint: "1/10の7倍"
+        },
+        {
+          id: "frac_9_10",
+          fraction: "9/10",
+          numerator: 9,
+          denominator: 10,
+          decimal: 0.9,
+          decimalStr: "0.9",
+          percent: 90,
+          percentStr: "90%",
+          usage: "9割、高い達成率",
+          hint: "1 - 1/10"
+        },
+        {
+          id: "frac_1_12",
+          fraction: "1/12",
+          numerator: 1,
+          denominator: 12,
+          decimal: 0.083,
+          decimalStr: "0.0833...",
+          percent: 8.3,
+          percentStr: "約8.3%",
+          usage: "5分=1/12時間",
+          hint: "1/6の半分"
+        },
+        {
+          id: "frac_5_12",
+          fraction: "5/12",
+          numerator: 5,
+          denominator: 12,
+          decimal: 0.417,
+          decimalStr: "0.4166...",
+          percent: 41.7,
+          percentStr: "約41.7%",
+          usage: "25分=5/12時間",
+          hint: "1/12の5倍"
+        },
+        {
+          id: "frac_7_12",
+          fraction: "7/12",
+          numerator: 7,
+          denominator: 12,
+          decimal: 0.583,
+          decimalStr: "0.5833...",
+          percent: 58.3,
+          percentStr: "約58.3%",
+          usage: "35分=7/12時間",
+          hint: "1/12の7倍"
+        },
+        {
+          id: "frac_11_12",
+          fraction: "11/12",
+          numerator: 11,
+          denominator: 12,
+          decimal: 0.917,
+          decimalStr: "0.9166...",
+          percent: 91.7,
+          percentStr: "約91.7%",
+          usage: "55分=11/12時間",
+          hint: "1 - 1/12"
+        },
+        {
+          id: "frac_1_16",
+          fraction: "1/16",
+          numerator: 1,
+          denominator: 16,
+          decimal: 0.0625,
+          decimalStr: "0.0625",
+          percent: 6.25,
+          percentStr: "6.25%",
+          usage: "16等分",
+          hint: "1/8の半分"
+        },
+        {
+          id: "frac_3_16",
+          fraction: "3/16",
+          numerator: 3,
+          denominator: 16,
+          decimal: 0.1875,
+          decimalStr: "0.1875",
+          percent: 18.75,
+          percentStr: "18.75%",
+          usage: "16分の3",
+          hint: "1/16の3倍"
+        },
+        {
+          id: "frac_5_16",
+          fraction: "5/16",
+          numerator: 5,
+          denominator: 16,
+          decimal: 0.3125,
+          decimalStr: "0.3125",
+          percent: 31.25,
+          percentStr: "31.25%",
+          usage: "16分の5",
+          hint: "1/16の5倍"
+        },
+        {
+          id: "frac_1_20",
+          fraction: "1/20",
+          numerator: 1,
+          denominator: 20,
+          decimal: 0.05,
+          decimalStr: "0.05",
+          percent: 5,
+          percentStr: "5%",
+          usage: "20等分、5%刻み",
+          hint: "1/10の半分"
+        },
+        {
+          id: "frac_3_20",
+          fraction: "3/20",
+          numerator: 3,
+          denominator: 20,
+          decimal: 0.15,
+          decimalStr: "0.15",
+          percent: 15,
+          percentStr: "15%",
+          usage: "15%オフ",
+          hint: "1/20の3倍"
+        },
+        {
+          id: "frac_1_25",
+          fraction: "1/25",
+          numerator: 1,
+          denominator: 25,
+          decimal: 0.04,
+          decimalStr: "0.04",
+          percent: 4,
+          percentStr: "4%",
+          usage: "25等分、4%刻み",
+          hint: "1/100の4倍"
+        },
+        {
+          id: "frac_1_50",
+          fraction: "1/50",
+          numerator: 1,
+          denominator: 50,
+          decimal: 0.02,
+          decimalStr: "0.02",
+          percent: 2,
+          percentStr: "2%",
+          usage: "50等分、2%刻み",
+          hint: "1/100の2倍"
+        },
+        {
+          id: "frac_1_100",
+          fraction: "1/100",
+          numerator: 1,
+          denominator: 100,
+          decimal: 0.01,
+          decimalStr: "0.01",
+          percent: 1,
+          percentStr: "1%",
+          usage: "パーセントの基本単位",
+          hint: "100で割る"
+        }
+      ];
+
+      // 分数クイズエンジン（QuizEngineを継承）
+      class FractionQuizEngine extends QuizEngine {
+        constructor() {
+          super(fractionsData, {
+            title: '分数⇄小数⇄百分率クイズ',
+            description: '日常計算力を高める'
+          });
+        }
+
+        makeQuestion(item, mode, focus) {
+          let prompt = "", correctValue = "", choices = [], type = "";
+
+          // 出題形式を決定
+          if (focus === "mixed") {
+            const pool = ["to_decimal", "to_percent", "from_decimal", "from_percent"];
+            type = this.shuffle(pool)[0];
+          } else {
+            type = focus;
+          }
+
+          // 問題生成
+          if (type === "to_decimal") {
+            prompt = `${item.fraction} を小数で表すと？`;
+            correctValue = item.decimalStr;
+            choices = this.makeDecimalChoices(item.decimal, correctValue);
+          } else if (type === "to_percent") {
+            prompt = `${item.fraction} を百分率で表すと？`;
+            correctValue = item.percentStr;
+            choices = this.makePercentChoices(item.percent, correctValue);
+          } else if (type === "from_decimal") {
+            prompt = `${item.decimalStr} を分数で表すと？`;
+            correctValue = item.fraction;
+            choices = this.makeFractionChoices(item.fraction, "decimal");
+          } else {
+            // from_percent
+            prompt = `${item.percentStr} を分数で表すと？`;
+            correctValue = item.fraction;
+            choices = this.makeFractionChoices(item.fraction, "percent");
+          }
+
+          const typeLabel = type === "to_decimal" ? '分数→小数' :
+                           type === "to_percent" ? '分数→百分率' :
+                           type === "from_decimal" ? '小数→分数' : '百分率→分数';
+
+          const placeholder = type === "to_decimal" ? "例: 0.5 または 0.333..." :
+                             type === "to_percent" ? "例: 50% または 約33%" :
+                             "例: 1/2 または 1/3";
+
+          return {
+            id: item.id + "-" + Math.random().toString(36).slice(2),
+            item,
+            prompt,
+            correct: correctValue,
+            choices,
+            type,
+            mode,
+            badges: [item.fraction, typeLabel],
+            hint: `用途: ${item.usage} | ${item.hint}`,
+            placeholder
+          };
+        }
+
+        makeDecimalChoices(decimal, correct) {
+          // 他の分数の小数値から選択肢を生成
+          const pool = fractionsData
+            .filter(f => f.decimalStr !== correct)
+            .map(f => f.decimalStr);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants]);
+          return all.slice(0, 4);
+        }
+
+        makePercentChoices(percent, correct) {
+          // 他の分数の百分率から選択肢を生成
+          const pool = fractionsData
+            .filter(f => f.percentStr !== correct)
+            .map(f => f.percentStr);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants]);
+          return all.slice(0, 4);
+        }
+
+        makeFractionChoices(fraction, sourceType) {
+          // 他の分数から選択肢を生成
+          const pool = fractionsData
+            .filter(f => f.fraction !== fraction)
+            .map(f => f.fraction);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([fraction, ...variants]);
+          return all.slice(0, 4);
+        }
+
+        compareAnswer(userAnswer, correctAnswer) {
+          if (userAnswer === correctAnswer) return true;
+
+          // 正規化して比較
+          const normalized = this.normalize(userAnswer);
+          const normalizedCorrect = this.normalize(correctAnswer);
+
+          if (normalized === normalizedCorrect) return true;
+
+          // 小数の場合、数値として比較（誤差許容）
+          const numUser = parseFloat(normalized);
+          const numCorrect = parseFloat(normalizedCorrect);
+          if (!isNaN(numUser) && !isNaN(numCorrect)) {
+            return Math.abs(numUser - numCorrect) < 0.01;
+          }
+
+          // 百分率の場合、%を除いて比較
+          const pctUser = normalized.replace(/[%％]/g, '');
+          const pctCorrect = normalizedCorrect.replace(/[%％]/g, '');
+          const pctNumUser = parseFloat(pctUser);
+          const pctNumCorrect = parseFloat(pctCorrect);
+          if (!isNaN(pctNumUser) && !isNaN(pctNumCorrect)) {
+            return Math.abs(pctNumUser - pctNumCorrect) < 1;
+          }
+
+          return false;
+        }
+
+        normalize(s) {
+          // 全角→半角変換
+          const z2h = s.replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+          return z2h.replace(/\s+/g, '')
+            .replace(/[％]/g, '%')
+            .replace(/^約?/, '');
+        }
+      }
+
+      // クイズエンジン初期化
+      const quizEngine = new FractionQuizEngine();
+    </script>
+  </body>
+</html>
