@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>割引計算クイズ｜暗算力アップ（オフライン）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../common/quiz-common.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>割引計算クイズ｜暗算力アップ（オフライン）</h1>
+      <p>30%オフで2100円！のように、セールやクーポンの計算を即座に暗算できるように。</p>
+    </header>
+
+    <main>
+      <!-- Config Section -->
+      <section class="card" id="config">
+        <h2>設定</h2>
+        <div class="row">
+          <div>
+            <label for="mode">モード</label>
+            <select id="mode">
+              <option value="multiple">4択問題（ランダム選択肢）</option>
+              <option value="input">直接入力（精度重視）</option>
+            </select>
+            <p class="tiny">選択式でスピード／入力式で精度を鍛えます。</p>
+          </div>
+          <div>
+            <label for="count">出題数</label>
+            <input id="count" type="number" min="5" max="50" value="15" />
+            <p class="tiny">推奨：10〜20問。短時間で反復。</p>
+          </div>
+          <div>
+            <label for="scope">出題範囲</label>
+            <select id="scope">
+              <option value="all">全形式（価格・割引率・割引額）</option>
+              <option value="final_price">割引後の価格を計算</option>
+              <option value="discount_rate">割引率を逆算</option>
+              <option value="discount_amount">割引額を計算</option>
+              <option value="common">よく使う割引（10%,20%,30%）</option>
+              <option value="half_price">半額・大幅割引（50%,70%）</option>
+            </select>
+            <p class="tiny">目的別に絞って練習できます。</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="startBtn">クイズ開始</button>
+        </div>
+        <p class="tiny">
+          ヒント：
+          <span class="badge">10%オフ = 0.9倍</span>
+          <span class="badge">20%オフ = 0.8倍</span>
+          <span class="badge">30%オフ = 0.7倍</span>
+          <span class="badge">50%オフ = 半額</span>
+        </p>
+
+        <details>
+          <summary>収録データ（実用的な30パターン）</summary>
+          <ul>
+            <li><strong>1000円の10%オフ:</strong> 900円（割引額100円）</li>
+            <li><strong>2000円の20%オフ:</strong> 1600円（割引額400円）</li>
+            <li><strong>3000円の30%オフ:</strong> 2100円（割引額900円）</li>
+            <li><strong>5000円の10%オフ:</strong> 4500円（割引額500円）</li>
+            <li><strong>5000円の20%オフ:</strong> 4000円（割引額1000円）</li>
+            <li><strong>5000円の40%オフ:</strong> 3000円（割引額2000円）</li>
+            <li><strong>10000円の10%オフ:</strong> 9000円（割引額1000円）</li>
+            <li><strong>10000円の30%オフ:</strong> 7000円（割引額3000円）</li>
+            <li><strong>8000円の25%オフ:</strong> 6000円（割引額2000円）</li>
+            <li><strong>12000円の50%オフ:</strong> 6000円（割引額6000円）- 半額</li>
+            <li>...他20パターン</li>
+          </ul>
+          <p class="tiny">セール、クーポン、ポイント還元など日常で遭遇する計算を網羅。</p>
+        </details>
+      </section>
+
+      <!-- Quiz Section -->
+      <div id="quizWrapper" class="hidden">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-text">
+            問題 <span id="currentQ">1</span> / <span id="totalQ">15</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+          <!-- Questions will be inserted here dynamically -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button id="exitBtn" class="danger">結果を見る</button>
+          <button id="nextBtn" class="primary">次へ</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsWrapper" class="hidden">
+        <div class="results-container">
+          <div class="card">
+            <div class="score-summary">
+              <div class="score-label">あなたのスコア</div>
+              <div class="score-number" id="scoreNumber">0 / 15</div>
+              <div class="score-label" id="scorePercent">正解率: 0%</div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restartBtn">最初からやり直す</button>
+              <button id="newQuizBtn" class="secondary">設定を変更して新規クイズ</button>
+              <button id="reviewWrongBtn" class="warn">間違いだけ復習</button>
+              <button id="reviewAllBtn" class="secondary">全問題をレビュー</button>
+            </div>
+          </div>
+
+          <!-- Wrong Answers Section -->
+          <div id="wrongSection" class="card result-section">
+            <h3>間違えた問題</h3>
+            <div id="wrongList"></div>
+          </div>
+
+          <!-- All Answers Section -->
+          <div id="allSection" class="card result-section hidden">
+            <h3>全問題の回答履歴</h3>
+            <div id="allList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>保存方法：このページを「.html」ファイルとして保存→ブラウザで開くだけ。</p>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>確認</h3>
+        <p id="modalMessage">本当に終了して結果を見ますか？</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="secondary">キャンセル</button>
+          <button id="modalConfirm" class="warn">結果を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../common/quiz-common.js"></script>
+    <script>
+      // 割引計算データ
+      const discountData = [
+        {
+          id: "d_1000_10",
+          originalPrice: 1000,
+          discountRate: 10,
+          finalPrice: 900,
+          discountAmount: 100,
+          usage: "カフェでの10%オフクーポン",
+          hint: "1000円の1割引き",
+          category: "common"
+        },
+        {
+          id: "d_2000_10",
+          originalPrice: 2000,
+          discountRate: 10,
+          finalPrice: 1800,
+          discountAmount: 200,
+          usage: "書籍の10%ポイント還元",
+          hint: "2000円の1割引き",
+          category: "common"
+        },
+        {
+          id: "d_2000_20",
+          originalPrice: 2000,
+          discountRate: 20,
+          finalPrice: 1600,
+          discountAmount: 400,
+          usage: "衣料品の20%オフセール",
+          hint: "2000円の2割引き",
+          category: "common"
+        },
+        {
+          id: "d_3000_30",
+          originalPrice: 3000,
+          discountRate: 30,
+          finalPrice: 2100,
+          discountAmount: 900,
+          usage: "家電の30%オフ",
+          hint: "3000円の3割引き",
+          category: "common"
+        },
+        {
+          id: "d_5000_10",
+          originalPrice: 5000,
+          discountRate: 10,
+          finalPrice: 4500,
+          discountAmount: 500,
+          usage: "化粧品の10%オフ",
+          hint: "5000円の1割引き",
+          category: "common"
+        },
+        {
+          id: "d_5000_20",
+          originalPrice: 5000,
+          discountRate: 20,
+          finalPrice: 4000,
+          discountAmount: 1000,
+          usage: "靴の20%オフセール",
+          hint: "5000円の2割引き",
+          category: "common"
+        },
+        {
+          id: "d_5000_30",
+          originalPrice: 5000,
+          discountRate: 30,
+          finalPrice: 3500,
+          discountAmount: 1500,
+          usage: "バッグの30%オフ",
+          hint: "5000円の3割引き",
+          category: "common"
+        },
+        {
+          id: "d_5000_40",
+          originalPrice: 5000,
+          discountRate: 40,
+          finalPrice: 3000,
+          discountAmount: 2000,
+          usage: "季節商品の40%オフ",
+          hint: "5000円の4割引き",
+          category: "common"
+        },
+        {
+          id: "d_8000_25",
+          originalPrice: 8000,
+          discountRate: 25,
+          finalPrice: 6000,
+          discountAmount: 2000,
+          usage: "PC周辺機器の25%オフ",
+          hint: "8000円の1/4引き",
+          category: "common"
+        },
+        {
+          id: "d_10000_10",
+          originalPrice: 10000,
+          discountRate: 10,
+          finalPrice: 9000,
+          discountAmount: 1000,
+          usage: "高額商品の10%還元",
+          hint: "10000円の1割引き",
+          category: "common"
+        },
+        {
+          id: "d_10000_20",
+          originalPrice: 10000,
+          discountRate: 20,
+          finalPrice: 8000,
+          discountAmount: 2000,
+          usage: "家具の20%オフ",
+          hint: "10000円の2割引き",
+          category: "common"
+        },
+        {
+          id: "d_10000_30",
+          originalPrice: 10000,
+          discountRate: 30,
+          finalPrice: 7000,
+          discountAmount: 3000,
+          usage: "スーツの30%オフ",
+          hint: "10000円の3割引き",
+          category: "common"
+        },
+        {
+          id: "d_12000_50",
+          originalPrice: 12000,
+          discountRate: 50,
+          finalPrice: 6000,
+          discountAmount: 6000,
+          usage: "在庫処分の半額セール",
+          hint: "半額！",
+          category: "half_price"
+        },
+        {
+          id: "d_6000_50",
+          originalPrice: 6000,
+          discountRate: 50,
+          finalPrice: 3000,
+          discountAmount: 3000,
+          usage: "洋服の半額セール",
+          hint: "半額！",
+          category: "half_price"
+        },
+        {
+          id: "d_4000_50",
+          originalPrice: 4000,
+          discountRate: 50,
+          finalPrice: 2000,
+          discountAmount: 2000,
+          usage: "アクセサリーの半額",
+          hint: "半額！",
+          category: "half_price"
+        },
+        {
+          id: "d_15000_30",
+          originalPrice: 15000,
+          discountRate: 30,
+          finalPrice: 10500,
+          discountAmount: 4500,
+          usage: "コートの30%オフ",
+          hint: "15000円の3割引き",
+          category: "common"
+        },
+        {
+          id: "d_20000_20",
+          originalPrice: 20000,
+          discountRate: 20,
+          finalPrice: 16000,
+          discountAmount: 4000,
+          usage: "自転車の20%オフ",
+          hint: "20000円の2割引き",
+          category: "common"
+        },
+        {
+          id: "d_3000_10",
+          originalPrice: 3000,
+          discountRate: 10,
+          finalPrice: 2700,
+          discountAmount: 300,
+          usage: "レストランの10%割引",
+          hint: "3000円の1割引き",
+          category: "common"
+        },
+        {
+          id: "d_4000_25",
+          originalPrice: 4000,
+          discountRate: 25,
+          finalPrice: 3000,
+          discountAmount: 1000,
+          usage: "時計の25%オフ",
+          hint: "4000円の1/4引き",
+          category: "common"
+        },
+        {
+          id: "d_7000_30",
+          originalPrice: 7000,
+          discountRate: 30,
+          finalPrice: 4900,
+          discountAmount: 2100,
+          usage: "スニーカーの30%オフ",
+          hint: "7000円の3割引き",
+          category: "common"
+        },
+        {
+          id: "d_9000_10",
+          originalPrice: 9000,
+          discountRate: 10,
+          finalPrice: 8100,
+          discountAmount: 900,
+          usage: "電子機器の10%還元",
+          hint: "9000円の1割引き",
+          category: "common"
+        },
+        {
+          id: "d_18000_50",
+          originalPrice: 18000,
+          discountRate: 50,
+          finalPrice: 9000,
+          discountAmount: 9000,
+          usage: "ブランド品の半額セール",
+          hint: "半額！",
+          category: "half_price"
+        },
+        {
+          id: "d_25000_20",
+          originalPrice: 25000,
+          discountRate: 20,
+          finalPrice: 20000,
+          discountAmount: 5000,
+          usage: "家電の20%オフ",
+          hint: "25000円の2割引き",
+          category: "common"
+        },
+        {
+          id: "d_30000_30",
+          originalPrice: 30000,
+          discountRate: 30,
+          finalPrice: 21000,
+          discountAmount: 9000,
+          usage: "ノートPCの30%オフ",
+          hint: "30000円の3割引き",
+          category: "common"
+        },
+        {
+          id: "d_8000_50",
+          originalPrice: 8000,
+          discountRate: 50,
+          finalPrice: 4000,
+          discountAmount: 4000,
+          usage: "ジャケットの半額",
+          hint: "半額！",
+          category: "half_price"
+        },
+        {
+          id: "d_10000_70",
+          originalPrice: 10000,
+          discountRate: 70,
+          finalPrice: 3000,
+          discountAmount: 7000,
+          usage: "大幅値下げ70%オフ",
+          hint: "7割引き、残り3割",
+          category: "half_price"
+        },
+        {
+          id: "d_5000_70",
+          originalPrice: 5000,
+          discountRate: 70,
+          finalPrice: 1500,
+          discountAmount: 3500,
+          usage: "クリアランス70%オフ",
+          hint: "7割引き、残り3割",
+          category: "half_price"
+        },
+        {
+          id: "d_6000_40",
+          originalPrice: 6000,
+          discountRate: 40,
+          finalPrice: 3600,
+          discountAmount: 2400,
+          usage: "インテリアの40%オフ",
+          hint: "6000円の4割引き",
+          category: "common"
+        },
+        {
+          id: "d_12000_25",
+          originalPrice: 12000,
+          discountRate: 25,
+          finalPrice: 9000,
+          discountAmount: 3000,
+          usage: "キッチン用品の25%オフ",
+          hint: "12000円の1/4引き",
+          category: "common"
+        },
+        {
+          id: "d_15000_20",
+          originalPrice: 15000,
+          discountRate: 20,
+          finalPrice: 12000,
+          discountAmount: 3000,
+          usage: "タブレットの20%オフ",
+          hint: "15000円の2割引き",
+          category: "common"
+        }
+      ];
+
+      // 割引計算クイズエンジン（QuizEngineを継承）
+      class DiscountQuizEngine extends QuizEngine {
+        constructor() {
+          super(discountData, {
+            title: '割引計算クイズ',
+            description: '日常のショッピングで役立つ暗算力'
+          });
+        }
+
+        buildQuestions() {
+          const scope = this.scopeSelect.value;
+          let pool = this.quizData;
+
+          // スコープでフィルタリング
+          if (scope === "common") {
+            pool = this.quizData.filter(x => x.category === "common");
+          } else if (scope === "half_price") {
+            pool = this.quizData.filter(x => x.category === "half_price");
+          }
+
+          const count = Math.min(Math.max(parseInt(this.countInput.value || 15, 10), 5), 50);
+          const mode = this.modeSelect.value;
+
+          this.questions = [];
+          const focus = scope === "final_price" ? "final_price" :
+                        scope === "discount_rate" ? "discount_rate" :
+                        scope === "discount_amount" ? "discount_amount" : "mixed";
+
+          pool = this.shuffle(pool);
+          for (let i = 0; i < count; i++) {
+            const q = this.makeQuestion(pool[i % pool.length], mode, focus);
+            this.questions.push(q);
+          }
+        }
+
+        makeQuestion(item, mode, focus) {
+          let prompt = "", correctValue = "", choices = [], type = "";
+
+          // 出題形式を決定
+          if (focus === "mixed") {
+            const pool = ["final_price", "discount_rate", "discount_amount"];
+            type = this.shuffle(pool)[0];
+          } else {
+            type = focus;
+          }
+
+          // 問題生成
+          if (type === "final_price") {
+            prompt = `${item.originalPrice.toLocaleString()}円の商品が${item.discountRate}%オフ。いくら？`;
+            correctValue = `${item.finalPrice.toLocaleString()}円`;
+            choices = this.makePriceChoices(item.finalPrice, correctValue);
+          } else if (type === "discount_rate") {
+            prompt = `${item.originalPrice.toLocaleString()}円が${item.finalPrice.toLocaleString()}円になった。何%オフ？`;
+            correctValue = `${item.discountRate}%`;
+            choices = this.makeRateChoices(item.discountRate, correctValue);
+          } else {
+            // discount_amount
+            prompt = `${item.originalPrice.toLocaleString()}円の${item.discountRate}%オフ。割引額は？`;
+            correctValue = `${item.discountAmount.toLocaleString()}円`;
+            choices = this.makeAmountChoices(item.discountAmount, correctValue);
+          }
+
+          const typeLabel = type === "final_price" ? '割引後の価格' :
+                           type === "discount_rate" ? '割引率' : '割引額';
+
+          const placeholder = type === "final_price" ? "例: 2100円" :
+                             type === "discount_rate" ? "例: 30%" :
+                             "例: 900円";
+
+          return {
+            id: item.id + "-" + Math.random().toString(36).slice(2),
+            item,
+            prompt,
+            correct: correctValue,
+            choices,
+            type,
+            mode,
+            badges: [`${item.originalPrice.toLocaleString()}円`, `${item.discountRate}%オフ`, typeLabel],
+            hint: `用途: ${item.usage} | ${item.hint}`,
+            placeholder
+          };
+        }
+
+        makePriceChoices(finalPrice, correct) {
+          // 他の割引後価格から選択肢を生成
+          const pool = discountData
+            .filter(d => d.finalPrice !== finalPrice)
+            .map(d => `${d.finalPrice.toLocaleString()}円`);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        makeRateChoices(discountRate, correct) {
+          // 近い割引率から選択肢を生成
+          const nearby = [10, 20, 25, 30, 40, 50, 70]
+            .filter(r => r !== discountRate)
+            .map(r => `${r}%`);
+          const variants = this.shuffle(nearby).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        makeAmountChoices(discountAmount, correct) {
+          // 他の割引額から選択肢を生成
+          const pool = discountData
+            .filter(d => d.discountAmount !== discountAmount)
+            .map(d => `${d.discountAmount.toLocaleString()}円`);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        compareAnswer(userAnswer, correctAnswer) {
+          if (userAnswer === correctAnswer) return true;
+
+          // 正規化して比較
+          const normalized = this.normalize(userAnswer);
+          const normalizedCorrect = this.normalize(correctAnswer);
+
+          if (normalized === normalizedCorrect) return true;
+
+          // 数値として比較
+          const numUser = this.parseNumber(normalized);
+          const numCorrect = this.parseNumber(normalizedCorrect);
+          if (numUser !== null && numCorrect !== null) {
+            return numUser === numCorrect;
+          }
+
+          return false;
+        }
+
+        normalize(s) {
+          // 全角→半角変換
+          const z2h = s.replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+          return z2h.replace(/\s+/g, '')
+            .replace(/[％]/g, '%')
+            .replace(/,/g, '');
+        }
+
+        parseNumber(s) {
+          // 数値をパース（円や%を除去）
+          const cleaned = s.replace(/[円%]/g, '');
+          const num = parseInt(cleaned, 10);
+          return isNaN(num) ? null : num;
+        }
+      }
+
+      // クイズエンジン初期化
+      const quizEngine = new DiscountQuizEngine();
+    </script>
+  </body>
+</html>
