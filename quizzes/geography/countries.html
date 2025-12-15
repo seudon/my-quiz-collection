@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>世界の国々クイズ｜国名・首都・通貨（オフライン）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../common/quiz-common.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>世界の国々クイズ｜国名・首都・通貨（オフライン）</h1>
+      <p>海外旅行やニュースで役立つ、世界の国々の基本情報を覚えよう。</p>
+    </header>
+
+    <main>
+      <!-- Config Section -->
+      <section class="card" id="config">
+        <h2>設定</h2>
+        <div class="row">
+          <div>
+            <label for="mode">モード</label>
+            <select id="mode">
+              <option value="multiple">4択問題（ランダム選択肢）</option>
+              <option value="input">直接入力（精度重視）</option>
+            </select>
+            <p class="tiny">選択式でスピード／入力式で精度を鍛えます。</p>
+          </div>
+          <div>
+            <label for="count">出題数</label>
+            <input id="count" type="number" min="5" max="80" value="20" />
+            <p class="tiny">推奨：15〜30問。短時間で反復。</p>
+          </div>
+          <div>
+            <label for="scope">出題範囲</label>
+            <select id="scope">
+              <option value="all">全形式（国名⇄首都⇄通貨）</option>
+              <option value="to_capital">国名→首都</option>
+              <option value="to_currency">国名→通貨</option>
+              <option value="from_capital">首都→国名</option>
+              <option value="from_currency">通貨→国名</option>
+              <option value="asia">アジア</option>
+              <option value="europe">ヨーロッパ</option>
+              <option value="americas">アメリカ大陸</option>
+              <option value="africa">アフリカ</option>
+              <option value="oceania">オセアニア</option>
+              <option value="g7">G7（主要7カ国）</option>
+              <option value="popular">観光人気国</option>
+            </select>
+            <p class="tiny">地域や目的別に絞って練習できます。</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="startBtn">クイズ開始</button>
+        </div>
+        <p class="tiny">
+          ヒント：
+          <span class="badge">アメリカ = ドル(USD)</span>
+          <span class="badge">ヨーロッパ多数 = ユーロ(EUR)</span>
+          <span class="badge">イギリス = ポンド(GBP)</span>
+        </p>
+
+        <details>
+          <summary>収録データ（世界の主要60カ国）</summary>
+          <ul>
+            <li><strong>日本:</strong> 首都=東京、通貨=円(JPY)、地域=アジア</li>
+            <li><strong>アメリカ:</strong> 首都=ワシントンD.C.、通貨=ドル(USD)、地域=北アメリカ</li>
+            <li><strong>中国:</strong> 首都=北京、通貨=人民元(CNY)、地域=アジア</li>
+            <li><strong>イギリス:</strong> 首都=ロンドン、通貨=ポンド(GBP)、地域=ヨーロッパ</li>
+            <li><strong>フランス:</strong> 首都=パリ、通貨=ユーロ(EUR)、地域=ヨーロッパ</li>
+            <li><strong>ドイツ:</strong> 首都=ベルリン、通貨=ユーロ(EUR)、地域=ヨーロッパ</li>
+            <li>...他54カ国</li>
+          </ul>
+          <p class="tiny">G7、G20、観光人気国、アジア近隣国など実用的な国を厳選。</p>
+        </details>
+      </section>
+
+      <!-- Quiz Section -->
+      <div id="quizWrapper" class="hidden">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-text">
+            問題 <span id="currentQ">1</span> / <span id="totalQ">20</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+          <!-- Questions will be inserted here dynamically -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button id="exitBtn" class="danger">結果を見る</button>
+          <button id="nextBtn" class="primary">次へ</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsWrapper" class="hidden">
+        <div class="results-container">
+          <div class="card">
+            <div class="score-summary">
+              <div class="score-label">あなたのスコア</div>
+              <div class="score-number" id="scoreNumber">0 / 20</div>
+              <div class="score-label" id="scorePercent">正解率: 0%</div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restartBtn">最初からやり直す</button>
+              <button id="newQuizBtn" class="secondary">設定を変更して新規クイズ</button>
+              <button id="reviewWrongBtn" class="warn">間違いだけ復習</button>
+              <button id="reviewAllBtn" class="secondary">全問題をレビュー</button>
+            </div>
+          </div>
+
+          <!-- Wrong Answers Section -->
+          <div id="wrongSection" class="card result-section">
+            <h3>間違えた問題</h3>
+            <div id="wrongList"></div>
+          </div>
+
+          <!-- All Answers Section -->
+          <div id="allSection" class="card result-section hidden">
+            <h3>全問題の回答履歴</h3>
+            <div id="allList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>保存方法：このページを「.html」ファイルとして保存→ブラウザで開くだけ。</p>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>確認</h3>
+        <p id="modalMessage">本当に終了して結果を見ますか？</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="secondary">キャンセル</button>
+          <button id="modalConfirm" class="warn">結果を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../common/quiz-common.js"></script>
+    <script>
+      // 世界の国々データ
+      const countriesData = [
+        // アジア
+        {
+          id: "jp",
+          country: "日本",
+          capital: "東京",
+          currency: "円",
+          currencyCode: "JPY",
+          region: "アジア",
+          category: ["asia", "g7", "popular"],
+          usage: "母国、G7メンバー",
+          hint: "島国、世界第3位の経済大国"
+        },
+        {
+          id: "cn",
+          country: "中国",
+          capital: "北京",
+          currency: "人民元",
+          currencyCode: "CNY",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "隣国、世界第2位の経済大国",
+          hint: "人口世界一、万里の長城"
+        },
+        {
+          id: "kr",
+          country: "韓国",
+          capital: "ソウル",
+          currency: "ウォン",
+          currencyCode: "KRW",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "隣国、K-POP・韓流",
+          hint: "朝鮮半島南部、IT先進国"
+        },
+        {
+          id: "in",
+          country: "インド",
+          capital: "ニューデリー",
+          currency: "ルピー",
+          currencyCode: "INR",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "IT大国、カレー",
+          hint: "人口世界一（2023年〜）、IT産業"
+        },
+        {
+          id: "th",
+          country: "タイ",
+          capital: "バンコク",
+          currency: "バーツ",
+          currencyCode: "THB",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "東南アジア観光、タイ料理",
+          hint: "微笑みの国、仏教国"
+        },
+        {
+          id: "sg",
+          country: "シンガポール",
+          capital: "シンガポール",
+          currency: "シンガポールドル",
+          currencyCode: "SGD",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "アジアのハブ、金融センター",
+          hint: "都市国家、マーライオン"
+        },
+        {
+          id: "my",
+          country: "マレーシア",
+          capital: "クアラルンプール",
+          currency: "リンギット",
+          currencyCode: "MYR",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "東南アジア観光",
+          hint: "ペトロナスツインタワー"
+        },
+        {
+          id: "id",
+          country: "インドネシア",
+          capital: "ジャカルタ",
+          currency: "ルピア",
+          currencyCode: "IDR",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "東南アジア最大、バリ島",
+          hint: "世界最多のイスラム教徒人口"
+        },
+        {
+          id: "ph",
+          country: "フィリピン",
+          capital: "マニラ",
+          currency: "ペソ",
+          currencyCode: "PHP",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "セブ島、英語留学",
+          hint: "7000以上の島々"
+        },
+        {
+          id: "vn",
+          country: "ベトナム",
+          capital: "ハノイ",
+          currency: "ドン",
+          currencyCode: "VND",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "フォー、製造業",
+          hint: "ホーチミン市（旧サイゴン）"
+        },
+        {
+          id: "tw",
+          country: "台湾",
+          capital: "台北",
+          currency: "台湾ドル",
+          currencyCode: "TWD",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "半導体産業、親日",
+          hint: "TSMC、小籠包"
+        },
+        {
+          id: "hk",
+          country: "香港",
+          capital: "香港",
+          currency: "香港ドル",
+          currencyCode: "HKD",
+          region: "アジア",
+          category: ["asia", "popular"],
+          usage: "金融センター、観光",
+          hint: "特別行政区、100万ドルの夜景"
+        },
+
+        // ヨーロッパ
+        {
+          id: "gb",
+          country: "イギリス",
+          capital: "ロンドン",
+          currency: "ポンド",
+          currencyCode: "GBP",
+          region: "ヨーロッパ",
+          category: ["europe", "g7", "popular"],
+          usage: "G7、金融センター",
+          hint: "ビッグベン、ユーロ非加盟"
+        },
+        {
+          id: "fr",
+          country: "フランス",
+          capital: "パリ",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "g7", "popular"],
+          usage: "G7、観光大国",
+          hint: "エッフェル塔、ファッション"
+        },
+        {
+          id: "de",
+          country: "ドイツ",
+          capital: "ベルリン",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "g7", "popular"],
+          usage: "G7、EU経済の中心",
+          hint: "ベルリンの壁、自動車産業"
+        },
+        {
+          id: "it",
+          country: "イタリア",
+          capital: "ローマ",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "g7", "popular"],
+          usage: "G7、観光・芸術",
+          hint: "コロッセオ、ピザ・パスタ"
+        },
+        {
+          id: "es",
+          country: "スペイン",
+          capital: "マドリード",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "観光、サッカー",
+          hint: "サグラダファミリア、フラメンコ"
+        },
+        {
+          id: "nl",
+          country: "オランダ",
+          capital: "アムステルダム",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "チューリップ、運河",
+          hint: "風車、アンネの日記"
+        },
+        {
+          id: "ch",
+          country: "スイス",
+          capital: "ベルン",
+          currency: "スイスフラン",
+          currencyCode: "CHF",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "永世中立国、金融",
+          hint: "アルプス、時計・チョコ"
+        },
+        {
+          id: "se",
+          country: "スウェーデン",
+          capital: "ストックホルム",
+          currency: "クローナ",
+          currencyCode: "SEK",
+          region: "ヨーロッパ",
+          category: ["europe"],
+          usage: "福祉国家、IKEA",
+          hint: "北欧、ノーベル賞"
+        },
+        {
+          id: "no",
+          country: "ノルウェー",
+          capital: "オスロ",
+          currency: "クローネ",
+          currencyCode: "NOK",
+          region: "ヨーロッパ",
+          category: ["europe"],
+          usage: "北欧、石油",
+          hint: "フィヨルド、オーロラ"
+        },
+        {
+          id: "dk",
+          country: "デンマーク",
+          capital: "コペンハーゲン",
+          currency: "クローネ",
+          currencyCode: "DKK",
+          region: "ヨーロッパ",
+          category: ["europe"],
+          usage: "北欧、レゴ",
+          hint: "人魚姫の像、幸福度高"
+        },
+        {
+          id: "fi",
+          country: "フィンランド",
+          capital: "ヘルシンキ",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe"],
+          usage: "北欧、サウナ",
+          hint: "ムーミン、教育先進国"
+        },
+        {
+          id: "ru",
+          country: "ロシア",
+          capital: "モスクワ",
+          currency: "ルーブル",
+          currencyCode: "RUB",
+          region: "ヨーロッパ",
+          category: ["europe"],
+          usage: "世界最大の国土",
+          hint: "赤の広場、ウォッカ"
+        },
+        {
+          id: "pl",
+          country: "ポーランド",
+          capital: "ワルシャワ",
+          currency: "ズロチ",
+          currencyCode: "PLN",
+          region: "ヨーロッパ",
+          category: ["europe"],
+          usage: "東欧、ショパン",
+          hint: "アウシュビッツ"
+        },
+        {
+          id: "cz",
+          country: "チェコ",
+          capital: "プラハ",
+          currency: "コルナ",
+          currencyCode: "CZK",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "東欧、ビール",
+          hint: "プラハ城、美しい街並み"
+        },
+        {
+          id: "gr",
+          country: "ギリシャ",
+          capital: "アテネ",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "古代文明、観光",
+          hint: "パルテノン神殿、オリンピック発祥"
+        },
+        {
+          id: "pt",
+          country: "ポルトガル",
+          capital: "リスボン",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "大航海時代、サッカー",
+          hint: "C.ロナウド、エッグタルト"
+        },
+        {
+          id: "at",
+          country: "オーストリア",
+          capital: "ウィーン",
+          currency: "ユーロ",
+          currencyCode: "EUR",
+          region: "ヨーロッパ",
+          category: ["europe", "popular"],
+          usage: "音楽の都、観光",
+          hint: "モーツァルト、ウィーン少年合唱団"
+        },
+
+        // 北アメリカ
+        {
+          id: "us",
+          country: "アメリカ",
+          capital: "ワシントンD.C.",
+          currency: "ドル",
+          currencyCode: "USD",
+          region: "北アメリカ",
+          category: ["americas", "g7", "popular"],
+          usage: "G7、世界最大の経済大国",
+          hint: "自由の女神、ハリウッド"
+        },
+        {
+          id: "ca",
+          country: "カナダ",
+          capital: "オタワ",
+          currency: "カナダドル",
+          currencyCode: "CAD",
+          region: "北アメリカ",
+          category: ["americas", "g7", "popular"],
+          usage: "G7、広大な自然",
+          hint: "メープル、ナイアガラの滝"
+        },
+        {
+          id: "mx",
+          country: "メキシコ",
+          capital: "メキシコシティ",
+          currency: "ペソ",
+          currencyCode: "MXN",
+          region: "北アメリカ",
+          category: ["americas", "popular"],
+          usage: "タコス、テキーラ",
+          hint: "マヤ・アステカ文明"
+        },
+
+        // 南アメリカ
+        {
+          id: "br",
+          country: "ブラジル",
+          capital: "ブラジリア",
+          currency: "レアル",
+          currencyCode: "BRL",
+          region: "南アメリカ",
+          category: ["americas", "popular"],
+          usage: "サッカー、カーニバル",
+          hint: "アマゾン、ポルトガル語"
+        },
+        {
+          id: "ar",
+          country: "アルゼンチン",
+          capital: "ブエノスアイレス",
+          currency: "ペソ",
+          currencyCode: "ARS",
+          region: "南アメリカ",
+          category: ["americas", "popular"],
+          usage: "サッカー、タンゴ",
+          hint: "メッシ、牛肉"
+        },
+        {
+          id: "cl",
+          country: "チリ",
+          capital: "サンティアゴ",
+          currency: "ペソ",
+          currencyCode: "CLP",
+          region: "南アメリカ",
+          category: ["americas"],
+          usage: "銅、ワイン",
+          hint: "細長い国、アンデス山脈"
+        },
+        {
+          id: "pe",
+          country: "ペルー",
+          capital: "リマ",
+          currency: "ソル",
+          currencyCode: "PEN",
+          region: "南アメリカ",
+          category: ["americas", "popular"],
+          usage: "マチュピチュ、ナスカの地上絵",
+          hint: "インカ帝国"
+        },
+
+        // アフリカ
+        {
+          id: "eg",
+          country: "エジプト",
+          capital: "カイロ",
+          currency: "ポンド",
+          currencyCode: "EGP",
+          region: "アフリカ",
+          category: ["africa", "popular"],
+          usage: "ピラミッド、スフィンクス",
+          hint: "古代文明、ナイル川"
+        },
+        {
+          id: "za",
+          country: "南アフリカ",
+          capital: "プレトリア",
+          currency: "ランド",
+          currencyCode: "ZAR",
+          region: "アフリカ",
+          category: ["africa", "popular"],
+          usage: "金・ダイヤモンド、サファリ",
+          hint: "3つの首都、マンデラ"
+        },
+        {
+          id: "ke",
+          country: "ケニア",
+          capital: "ナイロビ",
+          currency: "シリング",
+          currencyCode: "KES",
+          region: "アフリカ",
+          category: ["africa", "popular"],
+          usage: "サファリ、マラソン",
+          hint: "野生動物、赤道直下"
+        },
+        {
+          id: "ng",
+          country: "ナイジェリア",
+          capital: "アブジャ",
+          currency: "ナイラ",
+          currencyCode: "NGN",
+          region: "アフリカ",
+          category: ["africa"],
+          usage: "アフリカ最大人口、石油",
+          hint: "ノリウッド（映画産業）"
+        },
+        {
+          id: "ma",
+          country: "モロッコ",
+          capital: "ラバト",
+          currency: "ディルハム",
+          currencyCode: "MAD",
+          region: "アフリカ",
+          category: ["africa", "popular"],
+          usage: "マラケシュ、サハラ砂漠",
+          hint: "青い街シャウエン"
+        },
+
+        // オセアニア
+        {
+          id: "au",
+          country: "オーストラリア",
+          capital: "キャンベラ",
+          currency: "オーストラリアドル",
+          currencyCode: "AUD",
+          region: "オセアニア",
+          category: ["oceania", "popular"],
+          usage: "観光、資源大国",
+          hint: "カンガルー、コアラ、オペラハウス"
+        },
+        {
+          id: "nz",
+          country: "ニュージーランド",
+          capital: "ウェリントン",
+          currency: "ニュージーランドドル",
+          currencyCode: "NZD",
+          region: "オセアニア",
+          category: ["oceania", "popular"],
+          usage: "羊、ラグビー",
+          hint: "ロード・オブ・ザ・リング"
+        },
+
+        // 中東
+        {
+          id: "ae",
+          country: "UAE",
+          capital: "アブダビ",
+          currency: "ディルハム",
+          currencyCode: "AED",
+          region: "中東",
+          category: ["popular"],
+          usage: "ドバイ、石油",
+          hint: "ブルジュ・ハリファ、超高層ビル"
+        },
+        {
+          id: "sa",
+          country: "サウジアラビア",
+          capital: "リヤド",
+          currency: "リヤル",
+          currencyCode: "SAR",
+          region: "中東",
+          category: [],
+          usage: "石油大国、メッカ",
+          hint: "世界最大の石油輸出国"
+        },
+        {
+          id: "tr",
+          country: "トルコ",
+          capital: "アンカラ",
+          currency: "リラ",
+          currencyCode: "TRY",
+          region: "中東",
+          category: ["popular"],
+          usage: "東西文化の交差点",
+          hint: "イスタンブール、ケバブ"
+        },
+        {
+          id: "il",
+          country: "イスラエル",
+          capital: "エルサレム",
+          currency: "シェケル",
+          currencyCode: "ILS",
+          region: "中東",
+          category: ["popular"],
+          usage: "IT産業、聖地",
+          hint: "スタートアップ大国"
+        }
+      ];
+
+      // 世界の国々クイズエンジン（QuizEngineを継承）
+      class CountriesQuizEngine extends QuizEngine {
+        constructor() {
+          super(countriesData, {
+            title: '世界の国々クイズ',
+            description: '国名・首都・通貨を覚える'
+          });
+        }
+
+        buildQuestions() {
+          const scope = this.scopeSelect.value;
+          let pool = this.quizData;
+
+          // スコープでフィルタリング
+          if (scope === "asia") {
+            pool = this.quizData.filter(x => x.region === "アジア");
+          } else if (scope === "europe") {
+            pool = this.quizData.filter(x => x.region === "ヨーロッパ");
+          } else if (scope === "americas") {
+            pool = this.quizData.filter(x => x.region.includes("アメリカ"));
+          } else if (scope === "africa") {
+            pool = this.quizData.filter(x => x.region === "アフリカ");
+          } else if (scope === "oceania") {
+            pool = this.quizData.filter(x => x.region === "オセアニア");
+          } else if (scope === "g7") {
+            pool = this.quizData.filter(x => x.category.includes("g7"));
+          } else if (scope === "popular") {
+            pool = this.quizData.filter(x => x.category.includes("popular"));
+          }
+
+          const count = Math.min(Math.max(parseInt(this.countInput.value || 20, 10), 5), 80);
+          const mode = this.modeSelect.value;
+
+          this.questions = [];
+          const focus = scope === "to_capital" ? "to_capital" :
+                        scope === "to_currency" ? "to_currency" :
+                        scope === "from_capital" ? "from_capital" :
+                        scope === "from_currency" ? "from_currency" : "mixed";
+
+          pool = this.shuffle(pool);
+          for (let i = 0; i < count; i++) {
+            const q = this.makeQuestion(pool[i % pool.length], mode, focus);
+            this.questions.push(q);
+          }
+        }
+
+        makeQuestion(item, mode, focus) {
+          let prompt = "", correctValue = "", choices = [], type = "";
+
+          // 出題形式を決定
+          if (focus === "mixed") {
+            const pool = ["to_capital", "to_currency", "from_capital", "from_currency"];
+            type = this.shuffle(pool)[0];
+          } else {
+            type = focus;
+          }
+
+          // 問題生成
+          if (type === "to_capital") {
+            prompt = `${item.country}の首都は？`;
+            correctValue = item.capital;
+            choices = this.makeCapitalChoices(item.capital, correctValue);
+          } else if (type === "to_currency") {
+            prompt = `${item.country}の通貨は？`;
+            correctValue = `${item.currency}(${item.currencyCode})`;
+            choices = this.makeCurrencyChoices(item.currency, correctValue, item.currencyCode);
+          } else if (type === "from_capital") {
+            prompt = `首都が${item.capital}の国は？`;
+            correctValue = item.country;
+            choices = this.makeCountryChoices(item.country, correctValue);
+          } else {
+            // from_currency
+            prompt = `${item.currency}(${item.currencyCode})を使う国は？`;
+            correctValue = item.country;
+            choices = this.makeCountryChoices(item.country, correctValue);
+          }
+
+          const typeLabel = type === "to_capital" ? '国→首都' :
+                           type === "to_currency" ? '国→通貨' :
+                           type === "from_capital" ? '首都→国' : '通貨→国';
+
+          const placeholder = type === "to_capital" ? "例: 東京" :
+                             type === "to_currency" ? "例: 円(JPY)" :
+                             "例: 日本";
+
+          return {
+            id: item.id + "-" + Math.random().toString(36).slice(2),
+            item,
+            prompt,
+            correct: correctValue,
+            choices,
+            type,
+            mode,
+            badges: [item.country, item.region, typeLabel],
+            hint: `用途: ${item.usage} | ${item.hint}`,
+            placeholder
+          };
+        }
+
+        makeCapitalChoices(capital, correct) {
+          // 他の国の首都から選択肢を生成
+          const pool = countriesData
+            .filter(c => c.capital !== capital)
+            .map(c => c.capital);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        makeCurrencyChoices(currency, correct, currencyCode) {
+          // 他の国の通貨から選択肢を生成
+          const pool = countriesData
+            .filter(c => c.currency !== currency || c.currencyCode !== currencyCode)
+            .map(c => `${c.currency}(${c.currencyCode})`);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        makeCountryChoices(country, correct) {
+          // 他の国名から選択肢を生成
+          const pool = countriesData
+            .filter(c => c.country !== country)
+            .map(c => c.country);
+          const variants = this.shuffle(pool).slice(0, 3);
+          const all = this.shuffle([correct, ...variants])
+            .filter((v, i, self) => self.indexOf(v) === i);
+          return all.slice(0, 4);
+        }
+
+        compareAnswer(userAnswer, correctAnswer) {
+          if (userAnswer === correctAnswer) return true;
+
+          // 正規化して比較
+          const normalized = this.normalize(userAnswer);
+          const normalizedCorrect = this.normalize(correctAnswer);
+
+          return normalized === normalizedCorrect;
+        }
+
+        normalize(s) {
+          // 全角→半角変換
+          const z2h = s.replace(/[０-９Ａ-Ｚａ-ｚ]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+          return z2h.replace(/\s+/g, '')
+            .toLowerCase()
+            .replace(/[()（）]/g, '');
+        }
+      }
+
+      // クイズエンジン初期化
+      const quizEngine = new CountriesQuizEngine();
+    </script>
+  </body>
+</html>
