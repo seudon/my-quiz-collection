@@ -36,7 +36,8 @@
             <select id="scope">
               <option value="all">全範囲（期間・開始・終了・境界）</option>
               <option value="periods">各紀の「期間」だけ</option>
-              <option value="bounds">境界（K–Pg / P–T）だけ</option>
+              <option value="bounds">境界（全5件）だけ</option>
+              <option value="bigfive">ビッグファイブ（五大絶滅）だけ</option>
               <option value="starts">各紀の「開始」だけ</option>
               <option value="ends">各紀の「終了」だけ</option>
             </select>
@@ -52,6 +53,7 @@
           <span class="badge">白亜紀＝約7,900万年</span>
           <span class="badge">ジュラ紀＝約5,600万年</span>
           <span class="badge">三畳紀＝約5,000万年</span>
+          <span class="badge">ビッグファイブ＝五大絶滅イベント</span>
         </p>
 
         <details>
@@ -66,8 +68,14 @@
             <li><strong>三畳紀:</strong> 約2億5,200万〜約2億130万年前 → 約5千万年</li>
             <li><strong>ジュラ紀:</strong> 約2億130万〜約1億4,500万年前 → 約5,600万年</li>
             <li><strong>白亜紀:</strong> 約1億4,500万〜約6,600万年前 → 約7,900万年</li>
-            <li><strong>P–T境界:</strong> 約2億5,200万年前（古生代→中生代）</li>
-            <li><strong>K–Pg境界:</strong> 約6,600万年前（白亜紀→新生代）</li>
+          </ul>
+          <p class="tiny"><strong>ビッグファイブ（五大絶滅イベント）:</strong></p>
+          <ul>
+            <li><strong>O–S境界:</strong> 約4億4,000万年前（オルドビス紀末絶滅、海洋生物85%絶滅）</li>
+            <li><strong>D–C境界:</strong> 約3億6,000万年前（デボン紀後期絶滅、サンゴ礁崩壊）</li>
+            <li><strong>P–T境界:</strong> 約2億5,200万年前（ペルム紀末絶滅、史上最大90-95%絶滅）</li>
+            <li><strong>T–J境界:</strong> 約2億100万年前（三畳紀末絶滅、恐竜台頭）</li>
+            <li><strong>K–Pg境界:</strong> 約6,600万年前（白亜紀末絶滅、恐竜絶滅）</li>
           </ul>
           <p class="tiny">更新される研究に合わせた厳密値とは僅かに差がある場合がありますが、記憶定着には十分な代表値です。</p>
         </details>
@@ -232,18 +240,44 @@
           explain: "被子植物と恐竜全盛。約7,900万年間。"
         },
         {
+          id: "os",
+          name: "O–S境界（オルドビス→シルル）",
+          when: 440,
+          kind: "boundary",
+          bigfive: true,
+          explain: "オルドビス紀末絶滅。海洋生物85%絶滅、氷期。約4億4,000万年前。"
+        },
+        {
+          id: "dc",
+          name: "D–C境界（デボン→石炭）",
+          when: 360,
+          kind: "boundary",
+          bigfive: true,
+          explain: "デボン紀後期絶滅。サンゴ礁崩壊、海洋無酸素化。約3億6,000万年前。"
+        },
+        {
           id: "pt",
           name: "P–T境界（ペルム→三畳）",
           when: 252,
           kind: "boundary",
-          explain: "史上最大の大量絶滅。約2億5,200万年前。"
+          bigfive: true,
+          explain: "ペルム紀末絶滅（史上最大）。種の90-95%絶滅。約2億5,200万年前。"
+        },
+        {
+          id: "tj",
+          name: "T–J境界（三畳→ジュラ）",
+          when: 201,
+          kind: "boundary",
+          bigfive: true,
+          explain: "三畳紀末絶滅。恐竜台頭、CAMP火山活動。約2億100万年前。"
         },
         {
           id: "kpg",
           name: "K–Pg境界（白亜→新生代）",
           when: 66,
           kind: "boundary",
-          explain: "恐竜絶滅。約6,600万年前。"
+          bigfive: true,
+          explain: "白亜紀末絶滅。恐竜絶滅、小惑星衝突。約6,600万年前。"
         }
       ];
 
@@ -271,6 +305,33 @@
             title: '地質時代クイズ',
             description: 'カンブリア紀〜白亜紀まで'
           });
+        }
+
+        buildQuestions() {
+          const scope = this.scopeSelect.value;
+          let pool = this.quizData.filter(x => {
+            if (scope === "bounds") return x.kind === "boundary";
+            if (scope === "bigfive") return x.bigfive === true;
+            if (scope === "periods" || scope === "starts" || scope === "ends") {
+              return x.kind === "period";
+            }
+            return true;
+          });
+
+          const count = Math.min(Math.max(parseInt(this.countInput.value || 12, 10), 5), 50);
+          const mode = this.modeSelect.value;
+
+          this.questions = [];
+          const focus = scope === "periods" ? "dur" :
+                        scope === "starts" ? "start" :
+                        scope === "ends" ? "end" :
+                        scope === "bounds" || scope === "bigfive" ? "boundary" : "mixed";
+
+          pool = this.shuffle(pool);
+          for (let i = 0; i < count; i++) {
+            const q = this.makeQuestion(pool[i % pool.length], mode, focus);
+            this.questions.push(q);
+          }
         }
 
         makeQuestion(item, mode, focus) {
