@@ -615,13 +615,13 @@
         }
 
         generateCreatureChoices(correctItem) {
-          let choices = [{ text: correctItem.name, wiki: correctItem.wiki }];
+          let choices = [correctItem.name];
           const otherCreatures = this.quizData.filter(c => c.id !== correctItem.id);
 
           while (choices.length < 4 && otherCreatures.length > 0) {
             const randomIndex = Math.floor(Math.random() * otherCreatures.length);
             const creature = otherCreatures.splice(randomIndex, 1)[0];
-            choices.push({ text: creature.name, wiki: creature.wiki });
+            choices.push(creature.name);
           }
 
           return this.shuffle(choices);
@@ -702,52 +702,6 @@
           for (let i = 0; i < count; i++) {
             const item = pool[i % pool.length];
             this.questions.push(this.makeQuestion(item, mode, "mixed"));
-          }
-        }
-
-        displayQuestion() {
-          const q = this.questions[this.currentQuestionIndex];
-
-          // 問題文を表示
-          const questionHtml = `
-            <div class="card question-card">
-              <div class="badges">
-                ${q.badges.map(b => `<span class="badge">${b}</span>`).join('')}
-              </div>
-              <div class="question-text">${q.prompt}</div>
-              ${q.hint ? `<div class="hint-text">💡 ${q.hint}</div>` : ''}
-            </div>
-          `;
-
-          this.quizContainer.innerHTML = questionHtml;
-
-          // 選択肢を表示（Wikipedia リンク対応）
-          if (this.mode === "multiple") {
-            const choicesHtml = q.choices.map((choice, idx) => {
-              if (typeof choice === "object" && choice.wiki) {
-                // Wikipedia リンク付き選択肢
-                return `
-                  <div class="choice-btn" data-answer="${choice.text}">
-                    <span class="choice-text">${choice.text}</span>
-                    <a href="${choice.wiki}" target="_blank" class="wiki-link" onclick="event.stopPropagation()">🔗</a>
-                  </div>
-                `;
-              } else {
-                // 通常の選択肢
-                const text = typeof choice === "object" ? choice.text : choice;
-                return `<div class="choice-btn" data-answer="${text}">${text}</div>`;
-              }
-            }).join('');
-
-            this.quizContainer.innerHTML += `<div class="choices-container">${choicesHtml}</div>`;
-
-            // 選択肢のクリックイベント
-            document.querySelectorAll('.choice-btn').forEach(btn => {
-              btn.addEventListener('click', () => {
-                const answer = btn.getAttribute('data-answer');
-                this.handleAnswer(answer);
-              });
-            });
           }
         }
 
