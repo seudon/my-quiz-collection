@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>古生代古生物クイズ</title>
+  <link rel="stylesheet" href="../../quiz-common.css">
+</head>
+<body>
+  <div class="quiz-container">
+    <header>
+      <h1>古生代古生物クイズ</h1>
+      <p class="subtitle">カンブリア紀〜ペルム紀に生息していた古代生物を学ぼう</p>
+    </header>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="scope">📦 出題範囲</label>
+        <select id="scope">
+          <option value="all">全範囲（30種）</option>
+          <optgroup label="時代別">
+            <option value="cambrian">カンブリア紀</option>
+            <option value="ordovician">オルドビス紀</option>
+            <option value="silurian">シルル紀</option>
+            <option value="devonian">デボン紀</option>
+            <option value="carboniferous">石炭紀</option>
+            <option value="permian">ペルム紀</option>
+          </optgroup>
+          <optgroup label="分類別">
+            <option value="arthropod">節足動物系</option>
+            <option value="fish">魚類</option>
+            <option value="tetrapod">両生類・爬虫類</option>
+            <option value="other">その他（植物・原生生物など）</option>
+          </optgroup>
+          <option value="popular">人気種のみ</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="mode">🎯 出題モード</label>
+        <select id="mode">
+          <option value="choice">4択問題</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="focus">🎲 問題タイプ</label>
+        <select id="focus">
+          <option value="mixed">ランダム（全タイプ）</option>
+          <option value="name_to_period">名前→生息年代</option>
+          <option value="period_to_name">生息年代→名前</option>
+          <option value="feature_to_name">特徴→名前</option>
+          <option value="name_to_category">名前→分類</option>
+          <option value="name_to_feature">名前→特徴</option>
+          <option value="scientific_to_name">学名→名前</option>
+        </select>
+      </div>
+
+      <button id="start" class="btn-primary">クイズ開始</button>
+    </div>
+
+    <div id="hint-section" class="hint-section" style="display:none;">
+      <h3>💡 ヒント</h3>
+      <div class="hint-grid">
+        <div class="hint-item">
+          <strong>🦴 古生代とは</strong>
+          <p>約5億4,100万年前〜2億5,200万年前。カンブリア爆発で多様な生物が誕生し、陸上生物も登場。ペルム紀末に大量絶滅。</p>
+        </div>
+        <div class="hint-item">
+          <strong>🔍 Wikipedia リンク</strong>
+          <p>選択肢の生物名をクリックすると、詳しい情報を確認できます。</p>
+        </div>
+        <div class="hint-item">
+          <strong>📊 時代の順序</strong>
+          <p>カンブリア紀 → オルドビス紀 → シルル紀 → デボン紀 → 石炭紀 → ペルム紀</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="details-section" class="details-section" style="display:none;">
+      <h3>📚 収録データ詳細</h3>
+
+      <div class="details-group">
+        <h4>時代別の分布</h4>
+        <ul>
+          <li><strong>カンブリア紀</strong>: アノマロカリス、オパビニア、ハルキゲニア、パイカイアなど14種</li>
+          <li><strong>オルドビス紀</strong>: サカバンバスピス、ノーチロイドなど</li>
+          <li><strong>シルル紀</strong>: ケファラスピス、ユーロプテルスなど</li>
+          <li><strong>デボン紀</strong>: ダンクルオステウス、ティクターリクなど</li>
+          <li><strong>石炭紀</strong>: アースロプレウラ、メガネウラ、レピドデンドロンなど</li>
+          <li><strong>ペルム紀</strong>: ディメトロドン、リストロサウルス、ヘリコプリオンなど</li>
+        </ul>
+      </div>
+
+      <div class="details-group">
+        <h4>分類別</h4>
+        <ul>
+          <li><strong>節足動物系</strong>: 三葉虫、アノマロカリス、ハルキゲニア、メガネウラなど</li>
+          <li><strong>魚類</strong>: ダンクルオステウス、ティクターリク、ヘリコプリオンなど</li>
+          <li><strong>両生類・爬虫類</strong>: ディメトロドン、メソサウルス、ディプロカウルスなど</li>
+          <li><strong>その他</strong>: レピドデンドロン（植物）、フズリナ（原生生物）など</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="question-section" class="question-section" style="display:none;">
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <div class="question-header">
+        <span id="question-number" class="question-number">問題 1/10</span>
+        <span id="score" class="score">正解: 0/0</span>
+      </div>
+      <div id="question" class="question"></div>
+      <div id="choices" class="choices"></div>
+      <div id="feedback" class="feedback"></div>
+      <button id="next" class="btn-primary" style="display:none;">次の問題</button>
+    </div>
+
+    <div id="result-section" class="result-section" style="display:none;">
+      <h2>🎉 クイズ終了！</h2>
+      <div class="result-summary">
+        <div class="result-score">
+          <div class="score-value" id="final-score">0</div>
+          <div class="score-label">正解</div>
+        </div>
+        <div class="result-details">
+          <p>正解率: <strong id="accuracy">0%</strong></p>
+          <p>解答時間: <strong id="total-time">0</strong>秒</p>
+        </div>
+      </div>
+      <div id="mistakes" class="mistakes"></div>
+      <button id="retry" class="btn-primary">もう一度挑戦</button>
+      <button id="back-to-top" class="btn-secondary">設定に戻る</button>
+    </div>
+
+    <footer>
+      <p><a href="../../index.html">← トップページに戻る</a></p>
+    </footer>
+  </div>
+
+  <script src="../../quiz-common.js"></script>
+  <script>
+    // 古生代古生物データ
+    const paleozoicCreaturesData = [
+      {
+        id: "anomalocaris",
+        name: "アノマロカリス",
+        scientific: "Anomalocaris",
+        category: "節足動物幹群（ラディオドンタ類）",
+        period: "カンブリア紀",
+        feature: "カンブリア海の頂点捕食者。大きな複眼と掴む付属肢を持つ。",
+        wiki: "https://en.wikipedia.org/wiki/Anomalocaris",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: true
+      },
+      {
+        id: "arthropleura",
+        name: "アースロプレウラ",
+        scientific: "Arthropleura",
+        category: "節足動物（多足類）",
+        period: "石炭紀〜ペルム紀",
+        feature: "史上最大級の陸生節足動物。多数の脚を持つ巨大生物。",
+        wiki: "https://en.wikipedia.org/wiki/Arthropleura",
+        type: ["arthropod"],
+        era: ["carboniferous", "permian"],
+        popular: true
+      },
+      {
+        id: "opabinia",
+        name: "オパビニア",
+        scientific: "Opabinia regalis",
+        category: "節足動物幹群",
+        period: "カンブリア紀",
+        feature: "五つの眼と長い吻を持つ特異な古生物。",
+        wiki: "https://en.wikipedia.org/wiki/Opabinia",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: true
+      },
+      {
+        id: "kylinxia",
+        name: "カイリンシア",
+        scientific: "Kylinxia",
+        category: "節足動物幹群",
+        period: "カンブリア紀",
+        feature: "節足動物進化の中間的特徴を示す重要化石。",
+        wiki: "https://en.wikipedia.org/wiki/Kylinxia",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "cephalaspis",
+        name: "ケファラスピス",
+        scientific: "Cephalaspis",
+        category: "魚類（無顎類）",
+        period: "シルル紀〜デボン紀",
+        feature: "頭部に盾状の装甲を持つ底生魚。",
+        wiki: "https://en.wikipedia.org/wiki/Cephalaspis",
+        type: ["fish"],
+        era: ["silurian", "devonian"],
+        popular: false
+      },
+      {
+        id: "sacabambaspis",
+        name: "サカバンバスピス",
+        scientific: "Sacabambaspis",
+        category: "魚類（無顎類）",
+        period: "オルドビス紀",
+        feature: "眼が前方にある原始的な装甲魚。",
+        wiki: "https://en.wikipedia.org/wiki/Sacabambaspis",
+        type: ["fish"],
+        era: ["ordovician"],
+        popular: true
+      },
+      {
+        id: "sidneyia",
+        name: "シドニーア",
+        scientific: "Sidneyia",
+        category: "節足動物",
+        period: "カンブリア紀",
+        feature: "硬い殻を砕いて捕食したとされる底生動物。",
+        wiki: "https://en.wikipedia.org/wiki/Sidneyia",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "skania",
+        name: "スカニア",
+        scientific: "Skania",
+        category: "節足動物",
+        period: "カンブリア紀",
+        feature: "小型で殻と棘を持つ古節足動物。",
+        wiki: "https://en.wikipedia.org/wiki/Skania",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "dunkleosteus",
+        name: "ダンクルオステウス",
+        scientific: "Dunkleosteus",
+        category: "魚類（板皮類）",
+        period: "デボン紀",
+        feature: "史上最大級の肉食魚。刃状の骨板を持つ。",
+        wiki: "https://en.wikipedia.org/wiki/Dunkleosteus",
+        type: ["fish"],
+        era: ["devonian"],
+        popular: true
+      },
+      {
+        id: "dimetrodon",
+        name: "ディメトロドン",
+        scientific: "Dimetrodon",
+        category: "単弓類",
+        period: "ペルム紀",
+        feature: "背中の帆が特徴。恐竜ではなく哺乳類に近縁。",
+        wiki: "https://ja.wikipedia.org/wiki/ディメトロドン",
+        type: ["tetrapod"],
+        era: ["permian"],
+        popular: true
+      },
+      {
+        id: "diplocaulus",
+        name: "ディプロカウルス",
+        scientific: "Diplocaulus",
+        category: "両生類",
+        period: "ペルム紀",
+        feature: "ブーメラン状の頭部を持つ特異な水生両生類。",
+        wiki: "https://en.wikipedia.org/wiki/Diplocaulus",
+        type: ["tetrapod"],
+        era: ["permian"],
+        popular: true
+      },
+      {
+        id: "tiktaalik",
+        name: "ティクターリク",
+        scientific: "Tiktaalik",
+        category: "魚類（肉鰭類）",
+        period: "デボン紀",
+        feature: "魚と四肢動物の中間的特徴を持つ移行化石。",
+        wiki: "https://ja.wikipedia.org/wiki/ティクターリク",
+        type: ["fish"],
+        era: ["devonian"],
+        popular: true
+      },
+      {
+        id: "naraoia",
+        name: "ナラオイア",
+        scientific: "Naraoia",
+        category: "節足動物",
+        period: "カンブリア紀",
+        feature: "二枚貝状の外見を持つ三葉虫近縁種。",
+        wiki: "https://en.wikipedia.org/wiki/Naraoia",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "nectocaris",
+        name: "ネクトカリス",
+        scientific: "Nectocaris",
+        category: "軟体動物（頭足類幹群）",
+        period: "カンブリア紀",
+        feature: "殻を持たない初期頭足類。",
+        wiki: "https://en.wikipedia.org/wiki/Nectocaris",
+        type: ["other"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "nautiloidea",
+        name: "ノーチロイド",
+        scientific: "Nautiloidea",
+        category: "軟体動物（頭足類）",
+        period: "オルドビス紀〜ペルム紀",
+        feature: "オウムガイ類の祖先群。",
+        wiki: "https://en.wikipedia.org/wiki/Nautiloidea",
+        type: ["other"],
+        era: ["ordovician", "silurian", "devonian", "carboniferous", "permian"],
+        popular: false
+      },
+      {
+        id: "hallucigenia",
+        name: "ハルキゲニア",
+        scientific: "Hallucigenia",
+        category: "節足動物幹群",
+        period: "カンブリア紀",
+        feature: "上下が誤解されていた奇妙な姿の生物。",
+        wiki: "https://en.wikipedia.org/wiki/Hallucigenia",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: true
+      },
+      {
+        id: "pikaia",
+        name: "パイカイア",
+        scientific: "Pikaia",
+        category: "脊索動物",
+        period: "カンブリア紀",
+        feature: "脊椎動物の祖先とされる重要化石。",
+        wiki: "https://en.wikipedia.org/wiki/Pikaia",
+        type: ["other"],
+        era: ["cambrian"],
+        popular: true
+      },
+      {
+        id: "hyoliths",
+        name: "ヒオリテス",
+        scientific: "Hyoliths",
+        category: "分類未確定",
+        period: "カンブリア紀",
+        feature: "円錐形の殻を持つ謎の古生物群。",
+        wiki: "https://en.wikipedia.org/wiki/Hyolith",
+        type: ["other"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "fusulinida",
+        name: "フズリナ",
+        scientific: "Fusulinida",
+        category: "原生生物（有孔虫）",
+        period: "石炭紀〜ペルム紀",
+        feature: "示準化石として重要な微化石。",
+        wiki: "https://en.wikipedia.org/wiki/Fusulinida",
+        type: ["other"],
+        era: ["carboniferous", "permian"],
+        popular: false
+      },
+      {
+        id: "pterygotus",
+        name: "プテリギオトゥス",
+        scientific: "Pterygotus",
+        category: "節足動物（ウミサソリ類）",
+        period: "シルル紀〜デボン紀",
+        feature: "大型の捕食性ウミサソリ。",
+        wiki: "https://en.wikipedia.org/wiki/Pterygotus",
+        type: ["arthropod"],
+        era: ["silurian", "devonian"],
+        popular: true
+      },
+      {
+        id: "helicoprion",
+        name: "ヘリコプリオン",
+        scientific: "Helicoprion",
+        category: "軟骨魚類",
+        period: "ペルム紀",
+        feature: "渦巻き状の歯列を持つ古代サメ。",
+        wiki: "https://en.wikipedia.org/wiki/Helicoprion",
+        type: ["fish"],
+        era: ["permian"],
+        popular: true
+      },
+      {
+        id: "marrella",
+        name: "マルレラ",
+        scientific: "Marrella",
+        category: "節足動物",
+        period: "カンブリア紀",
+        feature: "バージェス頁岩で最も多産する化石。",
+        wiki: "https://en.wikipedia.org/wiki/Marrella",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "meganeura",
+        name: "メガネウラ",
+        scientific: "Meganeura",
+        category: "昆虫",
+        period: "石炭紀",
+        feature: "翼開長70cm級の巨大トンボ。",
+        wiki: "https://ja.wikipedia.org/wiki/メガネウラ",
+        type: ["arthropod"],
+        era: ["carboniferous"],
+        popular: true
+      },
+      {
+        id: "mesosaurus",
+        name: "メソサウルス",
+        scientific: "Mesosaurus",
+        category: "爬虫類",
+        period: "ペルム紀",
+        feature: "大陸移動説の重要証拠となった水生爬虫類。",
+        wiki: "https://en.wikipedia.org/wiki/Mesosaurus",
+        type: ["tetrapod"],
+        era: ["permian"],
+        popular: true
+      },
+      {
+        id: "eusthenopteron",
+        name: "ユーステノプテロン",
+        scientific: "Eusthenopteron",
+        category: "魚類（肉鰭類）",
+        period: "デボン紀",
+        feature: "四肢動物に近いヒレ骨格を持つ魚。",
+        wiki: "https://en.wikipedia.org/wiki/Eusthenopteron",
+        type: ["fish"],
+        era: ["devonian"],
+        popular: false
+      },
+      {
+        id: "eurypterus",
+        name: "ユーロプテルス",
+        scientific: "Eurypterus",
+        category: "節足動物（ウミサソリ類）",
+        period: "シルル紀",
+        feature: "ウミサソリ類の代表種。",
+        wiki: "https://en.wikipedia.org/wiki/Eurypterus",
+        type: ["arthropod"],
+        era: ["silurian"],
+        popular: false
+      },
+      {
+        id: "radiodonta",
+        name: "ラディオドンタ類",
+        scientific: "Radiodonta",
+        category: "節足動物幹群",
+        period: "カンブリア紀",
+        feature: "初期の大型捕食動物群。",
+        wiki: "https://en.wikipedia.org/wiki/Radiodonta",
+        type: ["arthropod"],
+        era: ["cambrian"],
+        popular: false
+      },
+      {
+        id: "lystrosaurus",
+        name: "リストロサウルス",
+        scientific: "Lystrosaurus",
+        category: "単弓類",
+        period: "ペルム紀",
+        feature: "大量絶滅を生き延びた代表的動物。",
+        wiki: "https://ja.wikipedia.org/wiki/リストロサウルス",
+        type: ["tetrapod"],
+        era: ["permian"],
+        popular: true
+      },
+      {
+        id: "lepidodendron",
+        name: "レピドデンドロン",
+        scientific: "Lepidodendron",
+        category: "植物",
+        period: "石炭紀",
+        feature: "石炭形成の主役となった巨大樹木。",
+        wiki: "https://ja.wikipedia.org/wiki/レピドデンドロン",
+        type: ["other"],
+        era: ["carboniferous"],
+        popular: true
+      },
+      {
+        id: "trilobita",
+        name: "三葉虫",
+        scientific: "Trilobita",
+        category: "節足動物",
+        period: "カンブリア紀〜ペルム紀",
+        feature: "古生代を代表する示準化石群。",
+        wiki: "https://ja.wikipedia.org/wiki/三葉虫",
+        type: ["arthropod"],
+        era: ["cambrian", "ordovician", "silurian", "devonian", "carboniferous", "permian"],
+        popular: true
+      }
+    ];
+
+    // クイズエンジン
+    class PaleozoicCreaturesQuizEngine extends QuizEngine {
+      constructor() {
+        super(paleozoicCreaturesData, {
+          defaultQuestionCount: 10,
+          defaultMode: 'choice'
+        });
+      }
+
+      buildQuestions() {
+        const scope = this.scopeSelect.value;
+        let pool = this.quizData.filter(item => {
+          if (scope === "all") return true;
+          if (scope === "popular") return item.popular === true;
+
+          // 時代別フィルター
+          if (["cambrian", "ordovician", "silurian", "devonian", "carboniferous", "permian"].includes(scope)) {
+            return item.era.includes(scope);
+          }
+
+          // 分類別フィルター
+          if (["arthropod", "fish", "tetrapod", "other"].includes(scope)) {
+            return item.type.includes(scope);
+          }
+
+          return true;
+        });
+
+        if (pool.length === 0) {
+          alert("選択された範囲にデータがありません");
+          return;
+        }
+
+        const focus = this.focusSelect.value;
+        const questionTypes = focus === "mixed"
+          ? ["name_to_period", "period_to_name", "feature_to_name", "name_to_category", "name_to_feature", "scientific_to_name"]
+          : [focus];
+
+        this.questions = [];
+        for (let i = 0; i < this.questionCount; i++) {
+          const item = pool[Math.floor(Math.random() * pool.length)];
+          const type = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+          this.questions.push(this.makeQuestion(item, this.mode, type));
+        }
+      }
+
+      makeQuestion(item, mode, questionType) {
+        let questionText = "";
+        let correctAnswer = "";
+        let choices = [];
+
+        switch (questionType) {
+          case "name_to_period":
+            questionText = `「${item.name}」が生息していた時代は？`;
+            correctAnswer = item.period;
+            choices = this.generatePeriodChoices(item.period);
+            break;
+
+          case "period_to_name":
+            questionText = `${item.period}に生息していた「${item.feature}」は？`;
+            correctAnswer = item.name;
+            choices = this.generateCreatureChoices(item, "name");
+            break;
+
+          case "feature_to_name":
+            questionText = `「${item.feature}」に該当する古生物は？`;
+            correctAnswer = item.name;
+            choices = this.generateCreatureChoices(item, "name");
+            break;
+
+          case "name_to_category":
+            questionText = `「${item.name}」の分類は？`;
+            correctAnswer = item.category;
+            choices = this.generateCategoryChoices(item.category);
+            break;
+
+          case "name_to_feature":
+            questionText = `「${item.name}」の特徴は？`;
+            correctAnswer = item.feature;
+            choices = this.generateFeatureChoices(item);
+            break;
+
+          case "scientific_to_name":
+            questionText = `学名「${item.scientific}」の和名は？`;
+            correctAnswer = item.name;
+            choices = this.generateCreatureChoices(item, "name");
+            break;
+        }
+
+        return {
+          question: questionText,
+          answer: correctAnswer,
+          choices: choices,
+          item: item,
+          type: questionType
+        };
+      }
+
+      generatePeriodChoices(correctPeriod) {
+        const periods = [
+          "カンブリア紀",
+          "オルドビス紀",
+          "シルル紀",
+          "デボン紀",
+          "石炭紀",
+          "ペルム紀",
+          "石炭紀〜ペルム紀",
+          "シルル紀〜デボン紀",
+          "オルドビス紀〜ペルム紀",
+          "カンブリア紀〜ペルム紀"
+        ];
+
+        let choices = [correctPeriod];
+        const availablePeriods = periods.filter(p => p !== correctPeriod);
+
+        while (choices.length < 4 && availablePeriods.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availablePeriods.length);
+          choices.push(availablePeriods.splice(randomIndex, 1)[0]);
+        }
+
+        return this.shuffleArray(choices);
+      }
+
+      generateCreatureChoices(correctItem, field) {
+        let choices = [{ name: correctItem.name, wiki: correctItem.wiki }];
+        const otherCreatures = this.quizData.filter(c => c.id !== correctItem.id);
+
+        while (choices.length < 4 && otherCreatures.length > 0) {
+          const randomIndex = Math.floor(Math.random() * otherCreatures.length);
+          const creature = otherCreatures.splice(randomIndex, 1)[0];
+          choices.push({ name: creature.name, wiki: creature.wiki });
+        }
+
+        return this.shuffleArray(choices);
+      }
+
+      generateCategoryChoices(correctCategory) {
+        const categories = [
+          "節足動物幹群（ラディオドンタ類）",
+          "節足動物（多足類）",
+          "節足動物",
+          "魚類（無顎類）",
+          "魚類（板皮類）",
+          "魚類（肉鰭類）",
+          "軟骨魚類",
+          "単弓類",
+          "両生類",
+          "爬虫類",
+          "軟体動物（頭足類）",
+          "脊索動物",
+          "原生生物（有孔虫）",
+          "植物",
+          "昆虫"
+        ];
+
+        let choices = [correctCategory];
+        const availableCategories = categories.filter(c => c !== correctCategory);
+
+        while (choices.length < 4 && availableCategories.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availableCategories.length);
+          choices.push(availableCategories.splice(randomIndex, 1)[0]);
+        }
+
+        return this.shuffleArray(choices);
+      }
+
+      generateFeatureChoices(correctItem) {
+        let choices = [correctItem.feature];
+        const otherCreatures = this.quizData.filter(c => c.id !== correctItem.id);
+
+        while (choices.length < 4 && otherCreatures.length > 0) {
+          const randomIndex = Math.floor(Math.random() * otherCreatures.length);
+          const creature = otherCreatures.splice(randomIndex, 1)[0];
+          choices.push(creature.feature);
+        }
+
+        return this.shuffleArray(choices);
+      }
+
+      displayQuestion() {
+        const q = this.questions[this.currentQuestionIndex];
+        this.questionDiv.innerHTML = `<p>${q.question}</p>`;
+        this.choicesDiv.innerHTML = "";
+        this.feedbackDiv.innerHTML = "";
+        this.feedbackDiv.className = "feedback";
+
+        if (this.mode === "choice") {
+          q.choices.forEach((choice, index) => {
+            const button = document.createElement("button");
+            button.className = "choice-btn";
+
+            // Wikipedia リンクを追加（生物名の選択肢の場合）
+            if (typeof choice === "object" && choice.wiki) {
+              const nameSpan = document.createElement("span");
+              nameSpan.textContent = choice.name;
+              button.appendChild(nameSpan);
+
+              const link = document.createElement("a");
+              link.href = choice.wiki;
+              link.target = "_blank";
+              link.className = "wiki-link";
+              link.textContent = "🔗";
+              link.onclick = (e) => e.stopPropagation();
+              button.appendChild(link);
+
+              button.onclick = () => this.checkAnswer(choice.name);
+            } else {
+              button.textContent = choice;
+              button.onclick = () => this.checkAnswer(choice);
+            }
+
+            this.choicesDiv.appendChild(button);
+          });
+        }
+      }
+
+      compareAnswer(userAnswer, correctAnswer) {
+        const normalize = (str) => {
+          return str
+            .replace(/\s+/g, "")
+            .replace(/[〜～]/g, "〜")
+            .toLowerCase();
+        };
+        return normalize(userAnswer) === normalize(correctAnswer);
+      }
+
+      shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      }
+    }
+
+    // 初期化
+    const quizEngine = new PaleozoicCreaturesQuizEngine();
+  </script>
+</body>
+</html>
