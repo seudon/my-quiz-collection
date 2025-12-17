@@ -575,6 +575,11 @@
             type === "name_to_category" ? '名前→分類' :
             type === "name_to_feature" ? '名前→特徴' : '学名→名前';
 
+          // デバッグ用ログ
+          console.log('Question type:', type);
+          console.log('Choices:', choices);
+          console.log('Choices[0] type:', typeof choices[0], choices[0]);
+
           return {
             id: item.id + "-" + Math.random().toString(36).slice(2),
             item,
