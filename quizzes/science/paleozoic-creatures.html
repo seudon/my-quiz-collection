@@ -694,10 +694,14 @@
             return;
           }
 
+          const count = Math.min(Math.max(parseInt(this.countInput.value || 10, 10), 5), 50);
+          const mode = this.modeSelect.value;
+
           this.questions = [];
-          for (let i = 0; i < this.questionCount; i++) {
-            const item = pool[Math.floor(Math.random() * pool.length)];
-            this.questions.push(this.makeQuestion(item, this.mode, "mixed"));
+          pool = this.shuffle(pool);
+          for (let i = 0; i < count; i++) {
+            const item = pool[i % pool.length];
+            this.questions.push(this.makeQuestion(item, mode, "mixed"));
           }
         }
 
