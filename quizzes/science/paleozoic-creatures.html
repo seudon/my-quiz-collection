@@ -525,6 +525,7 @@
 
         makeQuestion(item, mode, focus) {
           let prompt = "", correctValue = "", choices = [], type = "";
+          let wikiLinks = {}; // 選択肢のWikipediaリンクを格納
 
           // 問題タイプの決定
           const questionTypes = ["name_to_period", "period_to_name", "feature_to_name", "name_to_category", "name_to_feature", "scientific_to_name"];
@@ -540,13 +541,17 @@
             case "period_to_name":
               prompt = `${item.period}に生息していた「${item.feature}」は？`;
               correctValue = item.name;
-              choices = this.generateCreatureChoices(item);
+              const result1 = this.generateCreatureChoices(item);
+              choices = result1.choices;
+              wikiLinks = result1.wikiLinks;
               break;
 
             case "feature_to_name":
               prompt = `「${item.feature}」に該当する古生物は？`;
               correctValue = item.name;
-              choices = this.generateCreatureChoices(item);
+              const result2 = this.generateCreatureChoices(item);
+              choices = result2.choices;
+              wikiLinks = result2.wikiLinks;
               break;
 
             case "name_to_category":
@@ -564,7 +569,9 @@
             case "scientific_to_name":
               prompt = `学名「${item.scientific}」の和名は？`;
               correctValue = item.name;
-              choices = this.generateCreatureChoices(item);
+              const result3 = this.generateCreatureChoices(item);
+              choices = result3.choices;
+              wikiLinks = result3.wikiLinks;
               break;
           }
 
@@ -575,17 +582,13 @@
             type === "name_to_category" ? '名前→分類' :
             type === "name_to_feature" ? '名前→特徴' : '学名→名前';
 
-          // デバッグ用ログ
-          console.log('Question type:', type);
-          console.log('Choices:', choices);
-          console.log('Choices[0] type:', typeof choices[0], choices[0]);
-
           return {
             id: item.id + "-" + Math.random().toString(36).slice(2),
             item,
             prompt,
             correct: correctValue,
             choices,
+            wikiLinks, // Wikipediaリンク情報を追加
             type,
             mode,
             badges: [item.name, typeLabel],
@@ -620,16 +623,23 @@
         }
 
         generateCreatureChoices(correctItem) {
-          let choices = [correctItem.name];
+          let choiceItems = [correctItem];
           const otherCreatures = this.quizData.filter(c => c.id !== correctItem.id);
 
-          while (choices.length < 4 && otherCreatures.length > 0) {
+          while (choiceItems.length < 4 && otherCreatures.length > 0) {
             const randomIndex = Math.floor(Math.random() * otherCreatures.length);
-            const creature = otherCreatures.splice(randomIndex, 1)[0];
-            choices.push(creature.name);
+            choiceItems.push(otherCreatures.splice(randomIndex, 1)[0]);
           }
 
-          return this.shuffle(choices);
+          choiceItems = this.shuffle(choiceItems);
+
+          const choices = choiceItems.map(c => c.name);
+          const wikiLinks = {};
+          choiceItems.forEach(c => {
+            wikiLinks[c.name] = c.wiki;
+          });
+
+          return { choices, wikiLinks };
         }
 
         generateCategoryChoices(correctCategory) {
@@ -708,6 +718,69 @@
             const item = pool[i % pool.length];
             this.questions.push(this.makeQuestion(item, mode, "mixed"));
           }
+        }
+
+        // createQuestionSlideをオーバーライドしてWikipediaリンクを追加
+        createQuestionSlide(q, idx) {
+          const slide = document.createElement('div');
+          slide.className = 'question-slide';
+          slide.dataset.index = idx;
+
+          let choicesHTML = '';
+          if (q.mode === "multiple") {
+            choicesHTML = `
+              <div class="options">
+                ${q.choices.map((c, i) => {
+                  const wikiLink = q.wikiLinks && q.wikiLinks[c] ?
+                    ` <a href="${q.wikiLinks[c]}" target="_blank" class="wiki-link" onclick="event.stopPropagation()" style="color: #06b6d4; text-decoration: none; font-size: 0.85em;">🔗</a>` : '';
+                  return `
+                    <div class="opt" data-value="${c}" data-key="${i + 1}">
+                      ${c}${wikiLink}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          } else {
+            choicesHTML = `
+              <div class="answer-input">
+                <label>回答を入力してください</label>
+                <input type="text" class="answer-text" placeholder="${q.placeholder || '回答を入力'}" />
+              </div>
+            `;
+          }
+
+          slide.innerHTML = `
+            <div class="question-content">
+              <div class="question-header">
+                <div class="question-text">${q.prompt}</div>
+                <div class="question-badges">
+                  ${q.badges ? q.badges.map(b => `<span class="badge">${b}</span>`).join('') : ''}
+                </div>
+              </div>
+              ${choicesHTML}
+              ${q.hint ? `<div class="hint">💡 ${q.hint}</div>` : ''}
+            </div>
+          `;
+
+          // Add event listeners
+          if (q.mode === "multiple") {
+            const opts = slide.querySelectorAll('.opt');
+            opts.forEach(opt => {
+              opt.addEventListener('click', () => {
+                opts.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                this.userAnswers[q.id] = opt.dataset.value;
+              });
+            });
+          } else {
+            const input = slide.querySelector('.answer-text');
+            input.addEventListener('input', () => {
+              this.userAnswers[q.id] = input.value.trim();
+            });
+          }
+
+          return slide;
         }
 
         compareAnswer(userAnswer, correctAnswer) {
