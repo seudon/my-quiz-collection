@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>日本のノーベル賞受賞者クイズ（オフライン）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../common/quiz-common.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>日本のノーベル賞受賞者クイズ（オフライン）</h1>
+      <p>湯川秀樹から最新受賞者まで、日本のノーベル賞受賞者30名を学習。</p>
+    </header>
+
+    <main>
+      <!-- Config Section -->
+      <section class="card" id="config">
+        <h2>設定</h2>
+        <div class="row">
+          <div>
+            <label for="mode">モード</label>
+            <select id="mode">
+              <option value="multiple">4択問題（ランダム選択肢）</option>
+            </select>
+            <p class="tiny">受賞者名はWikipediaリンク付きで詳細を確認できます。</p>
+          </div>
+          <div>
+            <label for="count">出題数</label>
+            <input id="count" type="number" min="5" max="50" value="10" />
+            <p class="tiny">推奨：10〜20問。短時間で反復。</p>
+          </div>
+          <div>
+            <label for="scope">出題範囲</label>
+            <select id="scope">
+              <option value="all">全範囲（30名）</option>
+              <optgroup label="分野別">
+                <option value="physics">物理学賞</option>
+                <option value="chemistry">化学賞</option>
+                <option value="medicine">生理学・医学賞</option>
+                <option value="literature">文学賞</option>
+                <option value="peace">平和賞</option>
+              </optgroup>
+              <optgroup label="年代別">
+                <option value="1940s">1940年代</option>
+                <option value="1960s">1960年代</option>
+                <option value="1970s">1970年代</option>
+                <option value="1980s">1980年代</option>
+                <option value="1990s">1990年代</option>
+                <option value="2000s">2000年代</option>
+                <option value="2010s">2010年代</option>
+                <option value="2020s">2020年代</option>
+              </optgroup>
+              <option value="recent">最近の受賞者（2010年以降）</option>
+            </select>
+            <p class="tiny">分野別・年代別に絞って練習できます。</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="startBtn">クイズ開始</button>
+        </div>
+        <p class="tiny">
+          ヒント：
+          <span class="badge">湯川秀樹＝日本初のノーベル賞（1949年）</span>
+          <span class="badge">物理学賞＝最多12名受賞</span>
+          <span class="badge">2025年＝坂口志文・北川進が受賞</span>
+        </p>
+
+        <details>
+          <summary>収録データ（30名の日本人ノーベル賞受賞者）</summary>
+          <ul>
+            <li><strong>物理学賞:</strong> 湯川秀樹、朝永振一郎、江崎玲於奈、小柴昌俊など</li>
+            <li><strong>化学賞:</strong> 福井謙一、白川英樹、野依良治、田中耕一など</li>
+            <li><strong>生理学・医学賞:</strong> 利根川進、山中伸弥、大隅良典、本庶佑など</li>
+            <li><strong>文学賞:</strong> 川端康成、大江健三郎</li>
+            <li><strong>平和賞:</strong> 佐藤栄作、日本被団協</li>
+          </ul>
+          <p class="tiny">選択肢に表示される受賞者名をクリックすると、Wikipediaで詳しい情報を確認できます。</p>
+        </details>
+      </section>
+
+      <!-- Quiz Section -->
+      <div id="quizWrapper" class="hidden">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-text">
+            問題 <span id="currentQ">1</span> / <span id="totalQ">10</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+          <!-- Questions will be inserted here dynamically -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button id="exitBtn" class="danger">結果を見る</button>
+          <button id="nextBtn" class="primary">次へ</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsWrapper" class="hidden">
+        <div class="results-container">
+          <div class="card">
+            <div class="score-summary">
+              <div class="score-label">あなたのスコア</div>
+              <div class="score-number" id="scoreNumber">0 / 10</div>
+              <div class="score-label" id="scorePercent">正解率: 0%</div>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restartBtn">最初からやり直す</button>
+              <button id="newQuizBtn" class="secondary">設定を変更して新規クイズ</button>
+              <button id="reviewWrongBtn" class="warn">間違いだけ復習</button>
+              <button id="reviewAllBtn" class="secondary">全問題をレビュー</button>
+            </div>
+          </div>
+
+          <!-- Wrong Answers Section -->
+          <div id="wrongSection" class="card result-section">
+            <h3>間違えた問題</h3>
+            <div id="wrongList"></div>
+          </div>
+
+          <!-- All Answers Section -->
+          <div id="allSection" class="card result-section hidden">
+            <h3>全問題の回答履歴</h3>
+            <div id="allList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>保存方法：このページを「.html」ファイルとして保存→ブラウザで開くだけ。</p>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>確認</h3>
+        <p id="modalMessage">本当に終了して結果を見ますか？</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="secondary">キャンセル</button>
+          <button id="modalConfirm" class="warn">結果を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../common/quiz-common.js"></script>
+    <script>
+      // 日本のノーベル賞受賞者データ
+      const nobelPrizeData = [
+        {
+          id: "yukawa",
+          year: 1949,
+          name_jp: "湯川 秀樹",
+          name_en: "Hideki Yukawa",
+          field: "物理学賞",
+          reason: "中間子の存在を理論的に予言し、核力の理論的理解を確立した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%B9%AF%E5%B7%9D%E7%A7%80%E6%A8%B9",
+          category: ["physics"],
+          decade: ["1940s"],
+          recent: false
+        },
+        {
+          id: "tomonaga",
+          year: 1965,
+          name_jp: "朝永 振一郎",
+          name_en: "Shinichiro Tomonaga",
+          field: "物理学賞",
+          reason: "量子電磁力学の理論的発展に貢献した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%9C%9D%E6%B0%B8%E6%8C%AF%E4%B8%80%E9%83%8E",
+          category: ["physics"],
+          decade: ["1960s"],
+          recent: false
+        },
+        {
+          id: "kawabata",
+          year: 1968,
+          name_jp: "川端 康成",
+          name_en: "Yasunari Kawabata",
+          field: "文学賞",
+          reason: "日本的な美の感性を国際的に示した文学業績。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%B7%9D%E7%AB%AF%E5%BA%B7%E6%88%90",
+          category: ["literature"],
+          decade: ["1960s"],
+          recent: false
+        },
+        {
+          id: "esaki",
+          year: 1973,
+          name_jp: "江崎 玲於奈",
+          name_en: "Leo Esaki",
+          field: "物理学賞",
+          reason: "半導体のトンネル効果を示し、量子効果の応用を示した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%B1%9F%E5%B4%8E%E7%8E%B2%E4%BA%8E%E5%A5%88",
+          category: ["physics"],
+          decade: ["1970s"],
+          recent: false
+        },
+        {
+          id: "sato",
+          year: 1974,
+          name_jp: "佐藤 栄作",
+          name_en: "Eisaku Satō",
+          field: "平和賞",
+          reason: "日本の非核三原則を世界に示した平和への貢献。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E4%BD%90%E8%97%A4%E6%A0%84%E4%BD%9C",
+          category: ["peace"],
+          decade: ["1970s"],
+          recent: false
+        },
+        {
+          id: "fukui",
+          year: 1981,
+          name_jp: "福井 謙一",
+          name_en: "Kenichi Fukui",
+          field: "化学賞",
+          reason: "フロンティア軌道理論により分子反応の理論を構築した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E7%A6%8F%E4%BA%95%E8%AC%99%E4%B8%80",
+          category: ["chemistry"],
+          decade: ["1980s"],
+          recent: false
+        },
+        {
+          id: "tonegawa",
+          year: 1987,
+          name_jp: "利根川 進",
+          name_en: "Susumu Tonegawa",
+          field: "生理学・医学賞",
+          reason: "抗体多様性の遺伝的機構（V(D)J再編成）を発見した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%88%A9%E6%A0%B9%E5%B7%9D%E9%80%B2",
+          category: ["medicine"],
+          decade: ["1980s"],
+          recent: false
+        },
+        {
+          id: "oe",
+          year: 1994,
+          name_jp: "大江 健三郎",
+          name_en: "Kenzaburo Oe",
+          field: "文学賞",
+          reason: "詩的な力強さで現代人の苦悩を描いた文学世界を築いた。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%A4%A7%E6%B1%9F%E5%81%A5%E4%B8%89%E9%83%8E",
+          category: ["literature"],
+          decade: ["1990s"],
+          recent: false
+        },
+        {
+          id: "shirakawa",
+          year: 2000,
+          name_jp: "白川 英樹",
+          name_en: "Hideki Shirakawa",
+          field: "化学賞",
+          reason: "導電性高分子の発見と実用化に貢献した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E7%99%BD%E5%B7%9D%E8%8B%B1%E6%A8%B9",
+          category: ["chemistry"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "noyori",
+          year: 2001,
+          name_jp: "野依 良治",
+          name_en: "Ryoji Noyori",
+          field: "化学賞",
+          reason: "キラル触媒による有機合成を開拓した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E9%87%8E%E4%BE%9D%E8%89%AF%E6%B2%BB",
+          category: ["chemistry"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "tanaka",
+          year: 2002,
+          name_jp: "田中 耕一",
+          name_en: "Koichi Tanaka",
+          field: "化学賞",
+          reason: "大型分子質量分析法の進化に寄与した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E7%94%B0%E4%B8%AD%E8%80%95%E4%B8%80",
+          category: ["chemistry"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "koshiba",
+          year: 2002,
+          name_jp: "小柴 昌俊",
+          name_en: "Masatoshi Koshiba",
+          field: "物理学賞",
+          reason: "ニュートリノ観測により宇宙物理学に貢献した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%B0%8F%E6%9F%B4%E6%98%8C%E4%BF%8A",
+          category: ["physics"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "shimomura",
+          year: 2008,
+          name_jp: "下村 脩",
+          name_en: "Osamu Shimomura",
+          field: "化学賞",
+          reason: "緑色蛍光タンパク質（GFP）の発見で生物学的観察を革新した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E4%B8%8B%E6%9D%91%E8%84%A9",
+          category: ["chemistry"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "maskawa",
+          year: 2008,
+          name_jp: "益川 敏英",
+          name_en: "Toshihide Maskawa",
+          field: "物理学賞",
+          reason: "CP対称性の破れ起源を理論的に解明した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E7%9B%8A%E5%B7%9D%E6%95%8F%E8%8B%B1",
+          category: ["physics"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "kobayashi",
+          year: 2008,
+          name_jp: "小林 誠",
+          name_en: "Makoto Kobayashi",
+          field: "物理学賞",
+          reason: "CP対称性破れの発見に関与した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%B0%8F%E6%9E%97%E8%AA%A0",
+          category: ["physics"],
+          decade: ["2000s"],
+          recent: false
+        },
+        {
+          id: "negishi",
+          year: 2010,
+          name_jp: "根岸 英一",
+          name_en: "Ei-ichi Negishi",
+          field: "化学賞",
+          reason: "パラジウム触媒反応による有機合成法を確立した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%A0%B9%E5%B2%B8%E8%8B%B1%E4%B8%80",
+          category: ["chemistry"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "suzuki",
+          year: 2010,
+          name_jp: "鈴木 章",
+          name_en: "Akira Suzuki",
+          field: "化学賞",
+          reason: "パラジウム触媒反応による有機合成法を確立した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E9%88%B4%E6%9C%A8%E7%AB%A0",
+          category: ["chemistry"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "yamanaka",
+          year: 2012,
+          name_jp: "山中 伸弥",
+          name_en: "Shinya Yamanaka",
+          field: "生理学・医学賞",
+          reason: "iPS細胞の作製法を確立し再生医療に道を開いた。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%B1%B1%E4%B8%AD%E4%BC%B8%E5%BC%A5",
+          category: ["medicine"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "nakamura",
+          year: 2014,
+          name_jp: "中村 修二",
+          name_en: "Shuji Nakamura",
+          field: "物理学賞",
+          reason: "青色LEDの実用化で光源技術を革新した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E4%B8%AD%E6%9D%91%E4%BF%AE%E4%BA%8C",
+          category: ["physics"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "amano",
+          year: 2014,
+          name_jp: "天野 浩",
+          name_en: "Hiroshi Amano",
+          field: "物理学賞",
+          reason: "青色LEDの実用化で光源技術を革新した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%A4%A9%E9%87%8E%E6%B5%A9",
+          category: ["physics"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "akasaki",
+          year: 2014,
+          name_jp: "赤﨑 勇",
+          name_en: "Isamu Akasaki",
+          field: "物理学賞",
+          reason: "青色LEDの実用化で光源技術を革新した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E8%B5%A4%E2%94%96%E5%B4%8E%E5%8B%87",
+          category: ["physics"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "omura",
+          year: 2015,
+          name_jp: "大村 智",
+          name_en: "Satoshi Ōmura",
+          field: "生理学・医学賞",
+          reason: "寄生虫疾患治療薬の開発で人類の健康に貢献した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%A4%A7%E6%9D%91%E6%99%BA",
+          category: ["medicine"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "kajita",
+          year: 2015,
+          name_jp: "梶田 隆章",
+          name_en: "Takaaki Kajita",
+          field: "物理学賞",
+          reason: "ニュートリノ振動の発見でニュートリノに質量があることを示した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%A2%B6%E7%94%B0%E9%9A%86%E7%AB%A0",
+          category: ["physics"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "ohsumi",
+          year: 2016,
+          name_jp: "大隅 良典",
+          name_en: "Yoshinori Ohsumi",
+          field: "生理学・医学賞",
+          reason: "オートファジーの仕組みを解明し細胞生物学に貢献した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%A4%A7%E9%9A%85%E8%89%AF%E5%85%B8",
+          category: ["medicine"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "honjo",
+          year: 2018,
+          name_jp: "本庶 佑",
+          name_en: "Tasuku Honjo",
+          field: "生理学・医学賞",
+          reason: "PD-1免疫制御の発見でがん免疫療法の基盤を築いた。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%9C%AC%E5%BA%B6%E4%BD%91",
+          category: ["medicine"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "yoshino",
+          year: 2019,
+          name_jp: "吉野 彰",
+          name_en: "Akira Yoshino",
+          field: "化学賞",
+          reason: "リチウムイオン電池の開発でエネルギー技術を革新した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%90%89%E9%87%8E%E5%BD%B0",
+          category: ["chemistry"],
+          decade: ["2010s"],
+          recent: true
+        },
+        {
+          id: "manabe",
+          year: 2021,
+          name_jp: "眞鍋 淑郎",
+          name_en: "Syukuro Manabe",
+          field: "物理学賞",
+          reason: "気候モデルの物理的理解に貢献した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E7%9C%9F%E9%8D%8B%E6%B7%91%E9%83%8E",
+          category: ["physics"],
+          decade: ["2020s"],
+          recent: true
+        },
+        {
+          id: "hidankyo",
+          year: 2024,
+          name_jp: "日本被団協",
+          name_en: "Nihon Hidankyo",
+          field: "平和賞",
+          reason: "原爆被害の証言を通じて核廃絶を訴えた活動が評価された。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E8%A2%AB%E5%9B%A3%E5%8D%94",
+          category: ["peace"],
+          decade: ["2020s"],
+          recent: true
+        },
+        {
+          id: "sakaguchi",
+          year: 2025,
+          name_jp: "坂口 志文",
+          name_en: "Shimon Sakaguchi",
+          field: "生理学・医学賞",
+          reason: "制御性T細胞の発見と免疫寛容の理解を深めた。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%9D%82%E5%8F%A3%E5%BF%97%E6%96%87",
+          category: ["medicine"],
+          decade: ["2020s"],
+          recent: true
+        },
+        {
+          id: "kitagawa",
+          year: 2025,
+          name_jp: "北川 進",
+          name_en: "Susumu Kitagawa",
+          field: "化学賞",
+          reason: "金属有機構造体（MOFs）の開発で環境・エネルギー分野に応用可能な材料を創出した。",
+          wiki_jp: "https://ja.wikipedia.org/wiki/%E5%8C%97%E5%B7%9D%E9%80%B2",
+          category: ["chemistry"],
+          decade: ["2020s"],
+          recent: true
+        }
+      ];
+
+      // 日本のノーベル賞受賞者クイズエンジン（QuizEngineを継承）
+      class NobelPrizeQuizEngine extends QuizEngine {
+        constructor() {
+          super(nobelPrizeData, {
+            title: '日本のノーベル賞受賞者クイズ',
+            description: '湯川秀樹から最新受賞者まで'
+          });
+        }
+
+        makeQuestion(item, mode, focus) {
+          let prompt = "", correctValue = "", choices = [], type = "";
+          let wikiLinks = {}; // 選択肢のWikipediaリンクを格納
+
+          // 問題タイプの決定
+          const questionTypes = ["name_to_year", "name_to_field", "name_to_reason", "reason_to_name", "year_to_name", "english_to_japanese"];
+          type = this.shuffle(questionTypes)[0];
+
+          switch (type) {
+            case "name_to_year":
+              prompt = `「${item.name_jp}」がノーベル賞を受賞した年は？`;
+              correctValue = item.year.toString() + "年";
+              choices = this.generateYearChoices(item.year);
+              break;
+
+            case "name_to_field":
+              prompt = `「${item.name_jp}」が受賞したノーベル賞の分野は？`;
+              correctValue = item.field;
+              choices = this.generateFieldChoices(item.field);
+              break;
+
+            case "name_to_reason":
+              prompt = `「${item.name_jp}」のノーベル賞受賞理由は？`;
+              correctValue = item.reason;
+              choices = this.generateReasonChoices(item);
+              break;
+
+            case "reason_to_name":
+              prompt = `「${item.reason}」の功績でノーベル賞を受賞したのは？`;
+              correctValue = item.name_jp;
+              const result1 = this.generateNameChoices(item);
+              choices = result1.choices;
+              wikiLinks = result1.wikiLinks;
+              break;
+
+            case "year_to_name":
+              prompt = `${item.year}年の${item.field}を受賞したのは？`;
+              correctValue = item.name_jp;
+              const result2 = this.generateNameChoices(item);
+              choices = result2.choices;
+              wikiLinks = result2.wikiLinks;
+              break;
+
+            case "english_to_japanese":
+              prompt = `英語名「${item.name_en}」の日本語名は？`;
+              correctValue = item.name_jp;
+              const result3 = this.generateNameChoices(item);
+              choices = result3.choices;
+              wikiLinks = result3.wikiLinks;
+              break;
+          }
+
+          const typeLabel =
+            type === "name_to_year" ? '名前→受賞年' :
+            type === "name_to_field" ? '名前→分野' :
+            type === "name_to_reason" ? '名前→受賞理由' :
+            type === "reason_to_name" ? '受賞理由→名前' :
+            type === "year_to_name" ? '受賞年→名前' : '英語名→日本語名';
+
+          return {
+            id: item.id + "-" + Math.random().toString(36).slice(2),
+            item,
+            prompt,
+            correct: correctValue,
+            choices,
+            wikiLinks, // Wikipediaリンク情報を追加
+            type,
+            mode,
+            badges: [item.name_jp, typeLabel],
+            hint: `${item.year}年 | ${item.field}`,
+            placeholder: ""
+          };
+        }
+
+        generateYearChoices(correctYear) {
+          const years = [];
+          const allYears = this.quizData.map(d => d.year);
+          const uniqueYears = [...new Set(allYears)];
+
+          let choices = [correctYear.toString() + "年"];
+          const availableYears = uniqueYears.filter(y => y !== correctYear);
+
+          while (choices.length < 4 && availableYears.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableYears.length);
+            const year = availableYears.splice(randomIndex, 1)[0];
+            choices.push(year.toString() + "年");
+          }
+
+          return this.shuffle(choices);
+        }
+
+        generateFieldChoices(correctField) {
+          const fields = [
+            "物理学賞",
+            "化学賞",
+            "生理学・医学賞",
+            "文学賞",
+            "平和賞"
+          ];
+
+          let choices = [correctField];
+          const availableFields = fields.filter(f => f !== correctField);
+
+          while (choices.length < 4 && availableFields.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableFields.length);
+            choices.push(availableFields.splice(randomIndex, 1)[0]);
+          }
+
+          return this.shuffle(choices);
+        }
+
+        generateNameChoices(correctItem) {
+          let choiceItems = [correctItem];
+          const otherLaureates = this.quizData.filter(l => l.id !== correctItem.id);
+
+          while (choiceItems.length < 4 && otherLaureates.length > 0) {
+            const randomIndex = Math.floor(Math.random() * otherLaureates.length);
+            choiceItems.push(otherLaureates.splice(randomIndex, 1)[0]);
+          }
+
+          choiceItems = this.shuffle(choiceItems);
+
+          const choices = choiceItems.map(l => l.name_jp);
+          const wikiLinks = {};
+          choiceItems.forEach(l => {
+            wikiLinks[l.name_jp] = l.wiki_jp;
+          });
+
+          return { choices, wikiLinks };
+        }
+
+        generateReasonChoices(correctItem) {
+          let choices = [correctItem.reason];
+          const otherLaureates = this.quizData.filter(l => l.id !== correctItem.id);
+
+          while (choices.length < 4 && otherLaureates.length > 0) {
+            const randomIndex = Math.floor(Math.random() * otherLaureates.length);
+            const laureate = otherLaureates.splice(randomIndex, 1)[0];
+            choices.push(laureate.reason);
+          }
+
+          return this.shuffle(choices);
+        }
+
+        buildQuestions() {
+          const scope = this.scopeSelect.value;
+          let pool = this.quizData.filter(item => {
+            if (scope === "all") return true;
+            if (scope === "recent") return item.recent === true;
+
+            // 分野別フィルター
+            if (["physics", "chemistry", "medicine", "literature", "peace"].includes(scope)) {
+              return item.category.includes(scope);
+            }
+
+            // 年代別フィルター
+            if (["1940s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"].includes(scope)) {
+              return item.decade.includes(scope);
+            }
+
+            return true;
+          });
+
+          if (pool.length === 0) {
+            alert("選択された範囲にデータがありません");
+            return;
+          }
+
+          const count = Math.min(Math.max(parseInt(this.countInput.value || 10, 10), 5), 50);
+          const mode = this.modeSelect.value;
+
+          this.questions = [];
+          pool = this.shuffle(pool);
+          for (let i = 0; i < count; i++) {
+            const item = pool[i % pool.length];
+            this.questions.push(this.makeQuestion(item, mode, "mixed"));
+          }
+        }
+
+        // createQuestionSlideをオーバーライドしてWikipediaリンクを追加
+        createQuestionSlide(q, idx) {
+          const slide = document.createElement('div');
+          slide.className = 'question-slide';
+          slide.dataset.index = idx;
+
+          let choicesHTML = '';
+          if (q.mode === "multiple") {
+            choicesHTML = `
+              <div class="options">
+                ${q.choices.map((c, i) => {
+                  const wikiLink = q.wikiLinks && q.wikiLinks[c] ?
+                    ` <a href="${q.wikiLinks[c]}" target="_blank" class="wiki-link" onclick="event.stopPropagation()" style="color: #06b6d4; text-decoration: none; font-size: 0.85em;">🔗</a>` : '';
+                  return `
+                    <div class="opt" data-value="${c}" data-key="${i + 1}">
+                      ${c}${wikiLink}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          } else {
+            choicesHTML = `
+              <div class="answer-input">
+                <label>回答を入力してください</label>
+                <input type="text" class="answer-text" placeholder="${q.placeholder || '回答を入力'}" />
+              </div>
+            `;
+          }
+
+          slide.innerHTML = `
+            <div class="question-content">
+              <div class="question-header">
+                <div class="question-text">${q.prompt}</div>
+                <div class="question-badges">
+                  ${q.badges ? q.badges.map(b => `<span class="badge">${b}</span>`).join('') : ''}
+                </div>
+              </div>
+              ${choicesHTML}
+              ${q.hint ? `<div class="hint">💡 ${q.hint}</div>` : ''}
+            </div>
+          `;
+
+          // Add event listeners
+          if (q.mode === "multiple") {
+            const opts = slide.querySelectorAll('.opt');
+            opts.forEach(opt => {
+              opt.addEventListener('click', () => {
+                opts.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                this.userAnswers[q.id] = opt.dataset.value;
+              });
+            });
+          } else {
+            const input = slide.querySelector('.answer-text');
+            input.addEventListener('input', () => {
+              this.userAnswers[q.id] = input.value.trim();
+            });
+          }
+
+          return slide;
+        }
+
+        compareAnswer(userAnswer, correctAnswer) {
+          const normalize = (str) => {
+            return str
+              .replace(/\s+/g, "")
+              .replace(/[〜～]/g, "〜")
+              .toLowerCase();
+          };
+          return normalize(userAnswer) === normalize(correctAnswer);
+        }
+      }
+
+      // クイズエンジン初期化
+      const quizEngine = new NobelPrizeQuizEngine();
+    </script>
+  </body>
+</html>
