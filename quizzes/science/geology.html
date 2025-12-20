@@ -38,6 +38,7 @@
               <option value="periods">各紀の「期間」だけ</option>
               <option value="bounds">境界（全5件）だけ</option>
               <option value="bigfive">ビッグファイブ（五大絶滅）だけ</option>
+              <option value="bigfive-details">ビッグファイブの詳細（原因・絶滅率など）</option>
               <option value="starts">各紀の「開始」だけ</option>
               <option value="ends">各紀の「終了」だけ</option>
             </select>
@@ -71,11 +72,16 @@
           </ul>
           <p class="tiny"><strong>ビッグファイブ（五大絶滅イベント）:</strong></p>
           <ul>
-            <li><strong>O–S境界:</strong> 約4億4,000万年前（オルドビス紀末絶滅、海洋生物85%絶滅）</li>
-            <li><strong>F–F境界:</strong> 約3億7,200万年前（後期デボン紀絶滅、ケルワッサー事変、海洋生物80%絶滅）</li>
-            <li><strong>P–T境界:</strong> 約2億5,200万年前（ペルム紀末絶滅、史上最大90-95%絶滅）</li>
-            <li><strong>T–J境界:</strong> 約2億100万年前（三畳紀末絶滅、恐竜台頭）</li>
-            <li><strong>K–Pg境界:</strong> 約6,600万年前（白亜紀末絶滅、恐竜絶滅）</li>
+            <li><strong>O–S境界:</strong> 約4億4,500万年前（オルドビス紀末絶滅、海洋生物85%絶滅）
+              <br>　原因: 全球的な氷河期と海水準変動 / 影響: 腕足類、三葉虫、サンゴ類</li>
+            <li><strong>F–F境界:</strong> 約3億7,200万年前（後期デボン紀絶滅、ケルワッサー事変、海洋生物80%絶滅）
+              <br>　原因: 海洋無酸素事変 / 影響: 腕足動物、三葉虫、造礁生物</li>
+            <li><strong>P–T境界:</strong> 約2億5,200万年前（ペルム紀末絶滅、史上最大90%絶滅、別名: 大いなる死）
+              <br>　原因: シベリア・トラップ火山活動 / 影響: 三葉虫（全滅）、サンゴ、古代爬虫類</li>
+            <li><strong>T–J境界:</strong> 約2億100万年前（三畳紀末絶滅、約30%絶滅、恐竜台頭）
+              <br>　原因: CAMP火山活動 / 影響: 大型両生類、一部爬虫類、サンゴ</li>
+            <li><strong>K–Pg境界:</strong> 約6,600万年前（白亜紀末絶滅、約75%絶滅、恐竜絶滅）
+              <br>　原因: チクシュルーブ隕石衝突 / 影響: 非鳥類恐竜（全滅）、アンモナイト</li>
           </ul>
           <p class="tiny">更新される研究に合わせた厳密値とは僅かに差がある場合がありますが、記憶定着には十分な代表値です。</p>
         </details>
@@ -242,10 +248,16 @@
         {
           id: "os",
           name: "O–S境界（オルドビス→シルル）",
-          when: 440,
+          when: 445,
           kind: "boundary",
           bigfive: true,
-          explain: "オルドビス紀末絶滅。海洋生物85%絶滅、氷期。約4億4,000万年前。"
+          extinctionRate: 85,
+          mainCause: "全球的な氷河期と海水準変動",
+          causes: ["全球的な氷河期と海水準変動", "海洋無酸素状態"],
+          affectedLife: ["腕足類", "三葉虫", "サンゴ類", "棘皮動物"],
+          impact: "二つの絶滅パルス（氷床形成→解消）",
+          altName: "Late Ordovician mass extinction",
+          explain: "オルドビス紀末絶滅。海洋生物85%絶滅、氷期。約4億4,500万年前。"
         },
         {
           id: "ff",
@@ -253,22 +265,40 @@
           when: 372.2,
           kind: "boundary",
           bigfive: true,
+          extinctionRate: 80,
+          mainCause: "海洋無酸素事変（ケルワッサー事変）",
+          causes: ["海洋無酸素事変（ケルワッサー事変）", "気候変動", "海水準変動", "天体衝突"],
+          affectedLife: ["腕足動物", "三葉虫", "造礁生物"],
+          impact: "サンゴ礁生態系の崩壊",
+          altName: "Kellwasser Event",
           explain: "後期デボン紀絶滅（ケルワッサー事変）。海洋生物80%絶滅、造礁生物壊滅。約3億7,200万年前。"
         },
         {
           id: "pt",
           name: "P–T境界（ペルム→三畳）",
-          when: 252,
+          when: 251.9,
           kind: "boundary",
           bigfive: true,
+          extinctionRate: 90,
+          mainCause: "シベリア・トラップ火山活動",
+          causes: ["シベリア・トラップ火山活動", "全球温暖化", "海洋無酸素化", "海洋酸性化"],
+          affectedLife: ["三葉虫（全滅）", "サンゴ", "古代爬虫類", "両生類"],
+          impact: "地球史上最大の大量絶滅（大いなる死）",
+          altName: "The Great Dying",
           explain: "ペルム紀末絶滅（史上最大）。種の90-95%絶滅。約2億5,200万年前。"
         },
         {
           id: "tj",
           name: "T–J境界（三畳→ジュラ）",
-          when: 201,
+          when: 201.3,
           kind: "boundary",
           bigfive: true,
+          extinctionRate: 30,
+          mainCause: "CAMP火山活動",
+          causes: ["CAMP火山活動", "全球温暖化", "海洋酸性化"],
+          affectedLife: ["大型両生類", "一部爬虫類", "サンゴ"],
+          impact: "恐竜時代の門出を促した生態学的転換点",
+          altName: "End-Triassic extinction",
           explain: "三畳紀末絶滅。恐竜台頭、CAMP火山活動。約2億100万年前。"
         },
         {
@@ -277,6 +307,12 @@
           when: 66,
           kind: "boundary",
           bigfive: true,
+          extinctionRate: 75,
+          mainCause: "チクシュルーブ隕石衝突",
+          causes: ["チクシュルーブ隕石衝突", "デカン・トラップ火山活動"],
+          affectedLife: ["非鳥類恐竜（全滅）", "アンモナイト", "海棲爬虫類"],
+          impact: "新生代への大転換点",
+          altName: "K-T extinction",
           explain: "白亜紀末絶滅。恐竜絶滅、小惑星衝突。約6,600万年前。"
         }
       ];
@@ -311,7 +347,7 @@
           const scope = this.scopeSelect.value;
           let pool = this.quizData.filter(x => {
             if (scope === "bounds") return x.kind === "boundary";
-            if (scope === "bigfive") return x.bigfive === true;
+            if (scope === "bigfive" || scope === "bigfive-details") return x.bigfive === true;
             if (scope === "periods" || scope === "starts" || scope === "ends") {
               return x.kind === "period";
             }
@@ -325,7 +361,8 @@
           const focus = scope === "periods" ? "dur" :
                         scope === "starts" ? "start" :
                         scope === "ends" ? "end" :
-                        scope === "bounds" || scope === "bigfive" ? "boundary" : "mixed";
+                        scope === "bounds" || scope === "bigfive" ? "boundary" :
+                        scope === "bigfive-details" ? "details" : "mixed";
 
           pool = this.shuffle(pool);
           for (let i = 0; i < count; i++) {
@@ -358,6 +395,24 @@
               correctValue = fmtMa(item.end);
               choices = this.makeMaChoices(item.end, correctValue, "end");
             }
+          } else if (focus === "details" && item.bigfive) {
+            // ビッグファイブの詳細クイズ
+            const detailTypes = ["extinctionRate", "cause", "affectedLife"];
+            type = this.shuffle(detailTypes)[0];
+
+            if (type === "extinctionRate") {
+              prompt = `${item.name}の絶滅率（種レベル）は約何%？`;
+              correctValue = `約${item.extinctionRate}%`;
+              choices = this.makeExtinctionRateChoices(item.extinctionRate, correctValue);
+            } else if (type === "cause") {
+              prompt = `${item.name}の主な原因は？`;
+              correctValue = item.mainCause;
+              choices = this.makeCauseChoices(item, correctValue);
+            } else if (type === "affectedLife") {
+              prompt = `${item.name}で影響を受けた生物群は？`;
+              correctValue = item.affectedLife[0]; // 代表的なものを1つ
+              choices = this.makeAffectedLifeChoices(item, correctValue);
+            }
           } else {
             type = "boundary";
             prompt = `${item.name}はいつ頃？`;
@@ -367,10 +422,14 @@
 
           const typeLabel = type === "dur" ? '期間' :
                            type === "start" ? '開始' :
-                           type === "end" ? '終了' : '境界';
+                           type === "end" ? '終了' :
+                           type === "extinctionRate" ? '絶滅率' :
+                           type === "cause" ? '原因' :
+                           type === "affectedLife" ? '影響生物' : '境界';
 
           const placeholder = type === "dur" ?
             "例: 約5000万年 または 約1億9000万年" :
+            type === "extinctionRate" ? "例: 約80%" :
             "例: 約2億5200万年前";
 
           return {
@@ -422,6 +481,58 @@
           const all = this.shuffle([correct, ...distract])
             .filter((v, i, self) => self.indexOf(v) === i);
           return all.slice(0, 4);
+        }
+
+        makeExtinctionRateChoices(rate, correct) {
+          // 絶滅率の選択肢を生成
+          const rates = [30, 75, 80, 85, 90];
+          const variants = rates.filter(r => r !== rate).map(r => `約${r}%`);
+          const pool = this.shuffle(variants).slice(0, 3);
+          const all = this.shuffle([correct, ...pool]);
+          return all;
+        }
+
+        makeCauseChoices(item, correct) {
+          // 原因の選択肢を生成
+          const allCauses = [
+            "全球的な氷河期と海水準変動",
+            "海洋無酸素事変（ケルワッサー事変）",
+            "シベリア・トラップ火山活動",
+            "CAMP火山活動",
+            "チクシュルーブ隕石衝突",
+            "デカン・トラップ火山活動",
+            "全球温暖化",
+            "海洋酸性化"
+          ];
+          const variants = allCauses.filter(c => c !== correct);
+          const pool = this.shuffle(variants).slice(0, 3);
+          const all = this.shuffle([correct, ...pool]);
+          return all;
+        }
+
+        makeAffectedLifeChoices(item, correct) {
+          // 影響を受けた生物の選択肢を生成
+          const allLife = [
+            "腕足類",
+            "三葉虫",
+            "サンゴ類",
+            "棘皮動物",
+            "腕足動物",
+            "造礁生物",
+            "三葉虫（全滅）",
+            "サンゴ",
+            "古代爬虫類",
+            "両生類",
+            "大型両生類",
+            "一部爬虫類",
+            "非鳥類恐竜（全滅）",
+            "アンモナイト",
+            "海棲爬虫類"
+          ];
+          const variants = allLife.filter(l => l !== correct && !item.affectedLife.includes(l));
+          const pool = this.shuffle(variants).slice(0, 3);
+          const all = this.shuffle([correct, ...pool]);
+          return all;
         }
 
         compareAnswer(userAnswer, correctAnswer) {
